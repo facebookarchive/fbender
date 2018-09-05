@@ -108,9 +108,9 @@ func (g *ExponentialGrowth) OnFail(test int) int {
 // GrowthHelp provides usage help about the growth
 const GrowthHelp = `Growth determines what will be the next value used for a test.
 * linear growth (+int) increases test value by a fixed amount after each success,
-  stops immidately after the first failure
+  stops immediately after the first failure
 * percentage growth (%float) increases test value by a fixed percentage after
-  each success, stops immidately after the first failure
+  each success, stops immediately after the first failure
 * exponential growth (^int) first doubles the test value after each success to
   find an upper bound, then performs a binary search up to a given precision`
 

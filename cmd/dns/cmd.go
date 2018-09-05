@@ -17,7 +17,7 @@ var template = &core.CommandTemplate{
 	Short: "Test DNS",
 	Long: `
 Queries may be prefixed with timestamp and a random 16-character hex to avoid
-hitting the cache. In bash this could have been achieved by runing:
+hitting the cache. In bash this could have been achieved by running:
   $(date +%s).$(openssl rand -hex 16).domain
 
 Target: ipv4, ipv6, hostname, ipv4:port, [ipv6]:port, hostname:port.
