@@ -81,10 +81,6 @@ other output. Available levels (both numbers and literals are accepted):
 func init() {
 	cobra.EnablePrefixMatching = true
 
-	Command.PersistentFlags().StringP("target", "t", "", "endpoint to load test")
-	if err := Command.MarkPersistentFlagRequired("target"); err != nil {
-		panic(err)
-	}
 	Command.PersistentFlags().DurationP("duration", "d", 1*time.Minute, "single test duration")
 
 	ioFlagSet := pflag.NewFlagSet("IO settings", pflag.ExitOnError)
@@ -111,11 +107,12 @@ func init() {
 	executionFlagSet.Bool("nostats", false, "disable statistics")
 	Command.PersistentFlags().AddFlagSet(executionFlagSet)
 
-	Command.Flags().SortFlags = false
-	Command.PersistentFlags().SortFlags = false
-
 	for _, subcommand := range Subcommands {
 		Command.AddCommand(subcommand)
+		subcommand.PersistentFlags().StringP("target", "t", "", "endpoint to load test")
+		if err := subcommand.MarkPersistentFlagRequired("target"); err != nil {
+			panic(err)
+		}
 	}
 }
 
