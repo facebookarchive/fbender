@@ -42,7 +42,7 @@ func (l *LogLevel) Set(value string) error {
 		v, err := strconv.ParseUint(value, 10, 32)
 		if err != nil || v >= uint64(len(logrus.AllLevels)) {
 			choices := ChoicesString(LogLevelChoices())
-			return fmt.Errorf("level must be an integer [0..%d) or %s", len(logrus.AllLevels), choices)
+			return fmt.Errorf("level must be an integer [0..%d] or %s", len(logrus.AllLevels)-1, choices)
 		}
 		level = logrus.Level(v)
 	}

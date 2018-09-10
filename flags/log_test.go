@@ -105,10 +105,10 @@ func TestLogLevel__Set(t *testing.T) {
 	assert.Equal(t, logrus.PanicLevel, logger.Level)
 	// Setting unknown level string should fail
 	err = logLevel.Set("unknown")
-	assert.EqualError(t, err, "level must be an integer [0..6) or (panic|fatal|error|warning|info|debug)")
+	assert.EqualError(t, err, "level must be an integer [0..5] or (panic|fatal|error|warning|info|debug)")
 	// Setting too large integer
 	err = logLevel.Set("6")
-	assert.EqualError(t, err, "level must be an integer [0..6) or (panic|fatal|error|warning|info|debug)")
+	assert.EqualError(t, err, "level must be an integer [0..5] or (panic|fatal|error|warning|info|debug)")
 }
 
 func TestLogLevel__Type(t *testing.T) {

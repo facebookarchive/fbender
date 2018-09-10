@@ -259,6 +259,34 @@ different buffer sizes (`-b, --buffer`) if you find FBender clumsy and not
 generating enough requests. Check out [Bender performance](https://github.com/pinterest/bender#performance)
 for more performance hacks.
 
+## Bash completion
+
+### Requirements
+
+Before attempting to run the command make sure you have a bash completion
+installed and enabled. In CentOS for example you need to install:
+
+```sh
+sudo yum install bash-completion bash-completion-extras
+```
+
+And source the `bash_completion` file:
+
+```sh
+source /etc/profile.d/bash_completion.sh
+```
+
+We recommend adding the above line to your `.bashrc`.
+
+### Enable bash completion
+
+To enable fbender autocompletion in bash run (you may want to add this line
+to your `.bashrc` to automatically run it when you open a new shell):
+
+```sh
+source <(fbender completion bash)
+```
+
 ## Troubleshooting
 
 ### FBender displays help instead of running a test

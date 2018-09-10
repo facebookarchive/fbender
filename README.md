@@ -72,6 +72,11 @@ go get -u github.com/facebookincubator/fbender
 go install github.com/facebookincubator/fbender
 ```
 
+You may want to add the following line to your .bashrc to enable autocompletion
+```sh
+source <(fbender complete bash)
+```
+
 ## Docs
 
 * [General usage guide](https://github.com/facebookincubator/fbender/blob/master/docs/USAGE.md)
