@@ -10,7 +10,7 @@ library. Similar to Bender, FBender provides two different approaches to load
 testing. The first, __Throughput__, gives the tester control over the throughput
 (QPS), but not over the concurrency. The second, __Concurrency__, gives the
 tester control over the concurrency, but not over the throughput. You can read
-more about that in the [Bender docmentation](https://github.com/pinterest/bender#bender).
+more about that in the [Bender documentation](https://github.com/pinterest/bender#bender).
 
 FBender has been designed to be easily extendable by additional protocols. Look
 at the guide on how to contribute new protocols.
