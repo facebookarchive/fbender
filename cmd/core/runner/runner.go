@@ -74,7 +74,7 @@ func (r *runner) Before(test int, opts interface{}) error {
 	}
 	r.recorders = append(r.recorders, o.Recorders...)
 	if !o.NoStatistics {
-		r.histogram = hist.NewHistogram(2*int(o.Timeout), int(o.Unit))
+		r.histogram = hist.NewHistogram(2*int(o.Timeout/o.Unit), int(o.Unit))
 		r.recorders = append(r.recorders, bender.NewHistogramRecorder(r.histogram))
 	}
 	cancel()
