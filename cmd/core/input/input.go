@@ -72,6 +72,7 @@ func parse(input io.Reader, transformer Transformer) []interface{} {
 
 func open(filename string) (*os.File, error) {
 	if len(filename) == 0 {
+		log.Errorf("Reading input lines until EOF:\n")
 		return os.Stdin, nil
 	}
 	return os.Open(filename)
