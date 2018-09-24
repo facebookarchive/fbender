@@ -18,7 +18,7 @@ import (
 )
 
 // Constraint represents a constraint tests should meet to be considered
-// successful
+// successful.
 type Constraint struct {
 	Metric     Metric
 	Aggregator Aggregator
@@ -31,7 +31,7 @@ func (c *Constraint) String() string {
 		c.Aggregator.Name(), c.Metric.Name(), c.Comparator.Name(), c.Threshold)
 }
 
-// Check fetches metric and checks if the constraint has been satisfied
+// Check fetches metric and checks if the constraint has been satisfied.
 func (c *Constraint) Check(start time.Time, duration time.Duration) error {
 	points, err := c.Metric.Fetch(start, duration)
 	if err != nil {
@@ -47,7 +47,7 @@ func (c *Constraint) Check(start time.Time, duration time.Duration) error {
 	return nil
 }
 
-// ConstraintsHelp is help message on how to use constraints
+// ConstraintsHelp is an help message on how to use constraints.
 const ConstraintsHelp = `
 Constraints follow the syntax:
   Constraint ::= <Aggregator>(<Metric>)<Cmp><Threshold>
@@ -64,7 +64,7 @@ Constraints examples:
 ` + GrowthHelp
 
 var (
-	// ErrNotParsed should be returned when a parser did not parse a constraint
+	// ErrNotParsed should be returned when a parser did not parse a constraint.
 	ErrNotParsed = errors.New("constraint could not be parsed")
 )
 
@@ -74,7 +74,7 @@ var (
 // ErrNotParsed which will result in trying next parser from the list.
 type MetricParser func(string) (Metric, error)
 
-// Named capture groups of the constraints matching regexp
+// Named capture groups of the constraints matching regexp.
 const (
 	aggregatorMatch = `(?P<aggregator>\w+)`
 	metricMatch     = `(?P<metric>\S+)`
@@ -82,10 +82,14 @@ const (
 	thresholdMatch  = `(?P<threshold>[-+]?\d*\.?\d+)`
 )
 
-var constraintRegexp = utils.MustCompile(fmt.Sprintf(`^\s*%s\(%s\)\s*%s\s*%s\s*$`,
-	aggregatorMatch, metricMatch, comparatorMatch, thresholdMatch))
+var constraintRegexp = utils.MustCompile(
+	fmt.Sprintf(
+		`^\s*%s\(%s\)\s*%s\s*%s\s*$`,
+		aggregatorMatch, metricMatch, comparatorMatch, thresholdMatch,
+	),
+)
 
-// ParseConstraint creates a constraint from a string representation
+// ParseConstraint creates a constraint from a string representation.
 func ParseConstraint(s string, parsers ...MetricParser) (*Constraint, error) {
 	if !constraintRegexp.MatchString(s) {
 		return nil, errors.New("invalid constraint format")
