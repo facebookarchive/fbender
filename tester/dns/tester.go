@@ -17,11 +17,12 @@ import (
 	protocol "github.com/pinterest/bender/dns"
 )
 
-// Tester is a load tester for DHCPv6
+// Tester is a load tester for DNS
 type Tester struct {
-	Target  string
-	Timeout time.Duration
-	client  *dns.Client
+	Target   string
+	Timeout  time.Duration
+	Protocol string
+	client   *dns.Client
 }
 
 // Before is called before the first test
@@ -30,6 +31,7 @@ func (t *Tester) Before(options interface{}) error {
 		ReadTimeout:  t.Timeout,
 		DialTimeout:  t.Timeout,
 		WriteTimeout: t.Timeout,
+		Net:          t.Protocol,
 	}
 	return nil
 }
