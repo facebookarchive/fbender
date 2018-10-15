@@ -38,6 +38,5 @@ var Command = core.NewTestCommand(template, params)
 
 func init() {
 	Command.PersistentFlags().BoolP("randomize", "r", false, "randomize queries with timestamp and a random hex")
-	Command.PersistentFlags().StringP(
-		"protocol", "p", "udp", "protocol to use for DNS queries. Can be tcp or udp (default udp)")
+	Command.PersistentFlags().StringP("protocol", "p", "udp", "protocol to use for DNS queries. Can be tcp or udp")
 }
