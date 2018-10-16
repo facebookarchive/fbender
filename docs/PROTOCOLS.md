@@ -55,9 +55,9 @@ fbender dhcpv6 throughput constraints \
 
 ### Custom Flags
 
-In addition to other standard flags  allows to prefix all queries with randomly
-generated values to avoid cached responses. When (`-r, --randomize` ) the
-queries will be prefixed as follows (the _QType_ remains unchanged)
+In addition to other standard flags DNS allows you prefix all queries with 
+randomly generated values to avoid cached responses. When (`-r, --randomize` ) 
+the queries will be prefixed as follows (the _QType_ remains unchanged)
 
 ```
 time.hex.domain
@@ -83,6 +83,9 @@ another.example.com A
 yet.another.example.com MX
 example.com TXT
 ```
+
+Also, DNS can be load tested over tcp, rather than just the standard udp
+interface, by specifying (`-p, --protocol tcp`).
 
 ### Examples
 
