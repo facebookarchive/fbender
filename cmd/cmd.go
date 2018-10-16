@@ -76,11 +76,7 @@ other output. Available levels (both numbers and literals are accepted):
   fbender http concurrency constraints -t $TARGET 20 -c "MAX(errors)<5"
   fbender dhcpv6 throughput constraints -t $TARGET 50 -c "MIN(latency)<20"
   fbender dns throughput constraints -t $TARGET 40 -c -g ^10 "MAX(errors)<5"`,
-	BashCompletionFunction: `__fbender_handle_constraint_flag()
-	{
-		COMPREPLY=($(compgen -W "uniform exponential" -- "${cur}"))
-	}
-
+	BashCompletionFunction: `
 	__fbender_handle_loglevel_flag()
 	{
 		COMPREPLY=($(compgen -W "panic fatal error warning info debug" -- "${cur}"))
@@ -127,7 +123,7 @@ func initExecutionFlags() {
 	distribution := flags.NewDefaultDistribution()
 	distributionChoices := flags.ChoicesString(flags.DistributionChoices())
 	Command.PersistentFlags().VarP(distribution, "dist", "D", fmt.Sprintf("requests distribution %s", distributionChoices))
-	if err := cobra.MarkFlagCustom(Command.PersistentFlags(), "dist", "__fbender_handle_constraint_flag"); err != nil {
+	if err := flags.BashCompletionDistribution(Command, Command.PersistentFlags(), "dist"); err != nil {
 		panic(err)
 	}
 	// Other settings

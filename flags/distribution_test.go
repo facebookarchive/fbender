@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/pinterest/bender"
+	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -145,4 +146,23 @@ func TestGetDistributionValue(t *testing.T) {
 	require.NotNil(t, flag)
 	_, err = flags.GetDistributionValue(flag.Value)
 	assert.EqualError(t, err, "trying to get distribution value of flag of type int")
+}
+
+func TestBashCompletionDistribution(t *testing.T) {
+	c := &cobra.Command{}
+	d := flags.NewDefaultDistribution()
+	// Check no error when applied to distribution flag
+	f := c.Flags().VarPF(d, "distribution", "d", "set distribution")
+	err := flags.BashCompletionDistribution(c, c.Flags(), "distribution")
+	require.NoError(t, err)
+	require.Contains(t, f.Annotations, "cobra_annotation_bash_completion_custom")
+	assert.Equal(t, []string{"__fbender_handle_distribution_flag"},
+		f.Annotations["cobra_annotation_bash_completion_custom"])
+	// Check error when flag is not defined
+	err = flags.BashCompletionDistribution(c, c.Flags(), "nonexistent")
+	assert.EqualError(t, err, "flag nonexistent accessed but not defined")
+	// Check error when flag is not a distribution
+	c.Flags().Int("myint", 0, "set myint")
+	err = flags.BashCompletionDistribution(c, c.Flags(), "myint")
+	assert.EqualError(t, err, "trying to autocomplete distribution on flag of type int")
 }
