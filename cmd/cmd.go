@@ -16,6 +16,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/facebookincubator/fbender/cmd/core"
 	"github.com/facebookincubator/fbender/cmd/dhcpv4"
 	"github.com/facebookincubator/fbender/cmd/dhcpv6"
 	"github.com/facebookincubator/fbender/cmd/dns"
@@ -148,6 +149,9 @@ func init() {
 		}
 	}
 	Command.AddCommand(completionCmd)
+	// Start post init functions
+	core.PostInit <- struct{}{}
+	core.PostInitWaitGroup.Wait()
 }
 
 // Execute runs the Command
