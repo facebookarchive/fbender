@@ -12,8 +12,26 @@ import (
 	"sync"
 )
 
-// Variables used for post initialization functions
 var (
-	PostInit          = make(chan struct{}, 1)
-	PostInitWaitGroup = &sync.WaitGroup{}
+	postinitLock      = make(chan struct{}, 1)
+	postinitWaitGroup = &sync.WaitGroup{}
 )
+
+// DeferPostInit defers an execution of postinit function until a StartPostInit
+// is called.
+func DeferPostInit(postinit func()) {
+	postinitWaitGroup.Add(1)
+	go func() {
+		<-postinitLock
+		postinit()
+		postinitWaitGroup.Done()
+		postinitLock <- struct{}{}
+	}()
+}
+
+// StartPostInit starts all postinit functions and blocks execution until all of
+// them are finished.
+func StartPostInit() {
+	postinitLock <- struct{}{}
+	postinitWaitGroup.Wait()
+}

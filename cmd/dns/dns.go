@@ -31,12 +31,9 @@ func params(cmd *cobra.Command, o *options.Options) (*runner.Params, error) {
 	if err != nil {
 		return nil, err
 	}
-	protocol, err := cmd.Flags().GetString("protocol")
+	protocol, err := GetProtocol(cmd.Flags(), "protocol")
 	if err != nil {
 		return nil, err
-	}
-	if protocol != "tcp" && protocol != "udp" {
-		return nil, fmt.Errorf("unknown protocol (%s), expecting one of 'tcp' or 'udp'", protocol)
 	}
 	r, err := input.NewRequestGenerator(o.Input, inputTransformer, getModifiers(randomize)...)
 	if err != nil {
