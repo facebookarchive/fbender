@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -116,6 +117,29 @@ func TestLogLevel__Type(t *testing.T) {
 	assert.Equal(t, "level", logLevel.Type())
 }
 
+func TestBashCompletionLogLevel(t *testing.T) {
+	c := &cobra.Command{}
+	l := &flags.LogLevel{Logger: logrus.New()}
+	// Check no error when applied to level flag
+	f := c.Flags().VarPF(l, "level", "l", "set level")
+	err := flags.BashCompletionLogLevel(c, c.Flags(), "level")
+	require.NoError(t, err)
+	require.Contains(t, f.Annotations, "cobra_annotation_bash_completion_custom")
+	assert.Equal(t, []string{"__fbender_handle_loglevel_flag"},
+		f.Annotations["cobra_annotation_bash_completion_custom"])
+	assert.Equal(t, `
+__fbender_handle_loglevel_flag() {
+	COMPREPLY=($(compgen -W "panic fatal error warning info debug" -- "${cur}"))
+}`, c.BashCompletionFunction)
+	// Check error when flag is not defined
+	err = flags.BashCompletionLogLevel(c, c.Flags(), "nonexistent")
+	assert.EqualError(t, err, "flag nonexistent accessed but not defined")
+	// Check error when flag is not a level
+	c.Flags().Int("myint", 0, "set myint")
+	err = flags.BashCompletionLogLevel(c, c.Flags(), "myint")
+	assert.EqualError(t, err, "trying to autocomplete level on flag of type int")
+}
+
 func TestLogFormatChoices(t *testing.T) {
 	expected := []string{"text", "json"}
 	assert.ElementsMatch(t, flags.LogFormatChoices(), expected)
@@ -150,6 +174,29 @@ func TestLogFormat__Type(t *testing.T) {
 	assert.Equal(t, "format", logFormat.Type())
 }
 
+func TestBashCompletionLogFormat(t *testing.T) {
+	c := &cobra.Command{}
+	l := &flags.LogFormat{Logger: logrus.New()}
+	// Check no error when applied to format flag
+	f := c.Flags().VarPF(l, "format", "f", "set format")
+	err := flags.BashCompletionLogFormat(c, c.Flags(), "format")
+	require.NoError(t, err)
+	require.Contains(t, f.Annotations, "cobra_annotation_bash_completion_custom")
+	assert.Equal(t, []string{"__fbender_handle_logformat_flag"},
+		f.Annotations["cobra_annotation_bash_completion_custom"])
+	assert.Equal(t, `
+__fbender_handle_logformat_flag() {
+	COMPREPLY=($(compgen -W "json text" -- "${cur}"))
+}`, c.BashCompletionFunction)
+	// Check error when flag is not defined
+	err = flags.BashCompletionLogFormat(c, c.Flags(), "nonexistent")
+	assert.EqualError(t, err, "flag nonexistent accessed but not defined")
+	// Check error when flag is not a format
+	c.Flags().Int("myint", 0, "set myint")
+	err = flags.BashCompletionLogFormat(c, c.Flags(), "myint")
+	assert.EqualError(t, err, "trying to autocomplete format on flag of type int")
+}
+
 func TestNewLogOutput(t *testing.T) {
 	logger := logrus.New()
 	logOutput := flags.NewLogOutput(logger)
@@ -169,7 +216,10 @@ func TestLogOutput__String(t *testing.T) {
 	filename := tempFilename("", "testlogoutput__string")
 	err = logOutput.Set(filename)
 	require.NoError(t, err)
-	defer logOutput.Out.Close()
+	defer func() {
+		err = logOutput.Out.Close()
+		require.NoError(t, err)
+	}()
 	assert.Equal(t, filename, logOutput.String())
 }
 
@@ -182,7 +232,9 @@ func TestLogOutput__Set(t *testing.T) {
 	file, err := os.Open(filename)
 	require.NoError(t, err)
 	fileStat, err := file.Stat()
-	file.Close()
+	require.NoError(t, err)
+	err = file.Close()
+	require.NoError(t, err)
 	require.NoError(t, err)
 	logFileStat, err := logOutput.Out.Stat()
 	require.NoError(t, err)
