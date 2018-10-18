@@ -13,8 +13,13 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+
+	"github.com/facebookincubator/fbender/utils"
 )
 
 // LogLevel represents a log level flag value
@@ -53,6 +58,25 @@ func (l *LogLevel) Set(value string) error {
 // Type returns a log level value type
 func (l *LogLevel) Type() string {
 	return "level"
+}
+
+// Bash completion function constants
+const (
+	fnameLogLevel = "__fbender_handle_loglevel_flag"
+	fbodyLogLevel = `COMPREPLY=($(compgen -W "%s" -- "${cur}"))`
+)
+
+// BashCompletionLogLevel adds bash completion to a distribution flag
+func BashCompletionLogLevel(cmd *cobra.Command, f *pflag.FlagSet, name string) error {
+	flag := f.Lookup(name)
+	if flag == nil {
+		return fmt.Errorf("flag %s accessed but not defined", name)
+	}
+	if _, ok := flag.Value.(*LogLevel); !ok {
+		return fmt.Errorf("trying to autocomplete level on flag of type %s", flag.Value.Type())
+	}
+	fbody := fmt.Sprintf(fbodyLogLevel, strings.Join(LogLevelChoices(), " "))
+	return utils.BashCompletion(cmd, f, name, fnameLogLevel, fbody)
 }
 
 // LogFormat represents a log format flag value
@@ -100,6 +124,25 @@ func (l *LogFormat) Set(value string) error {
 // Type returns a log format value type
 func (l *LogFormat) Type() string {
 	return "format"
+}
+
+// Bash completion function constants
+const (
+	fnameLogFormat = "__fbender_handle_logformat_flag"
+	fbodyLogFormat = `COMPREPLY=($(compgen -W "%s" -- "${cur}"))`
+)
+
+// BashCompletionLogFormat adds bash completion to a distribution flag
+func BashCompletionLogFormat(cmd *cobra.Command, f *pflag.FlagSet, name string) error {
+	flag := f.Lookup(name)
+	if flag == nil {
+		return fmt.Errorf("flag %s accessed but not defined", name)
+	}
+	if _, ok := flag.Value.(*LogFormat); !ok {
+		return fmt.Errorf("trying to autocomplete format on flag of type %s", flag.Value.Type())
+	}
+	fbody := fmt.Sprintf(fbodyLogFormat, strings.Join(LogFormatChoices(), " "))
+	return utils.BashCompletion(cmd, f, name, fnameLogFormat, fbody)
 }
 
 // LogOutput represents a log output flag value

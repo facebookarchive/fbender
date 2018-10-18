@@ -13,7 +13,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/facebookincubator/fbender/utils"
 	"github.com/pinterest/bender"
+	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
@@ -103,4 +105,22 @@ func GetDistributionValue(v pflag.Value) (DistributionGenerator, error) {
 		return distribution.Get(), nil
 	}
 	return nil, fmt.Errorf("trying to get distribution value of flag of type %s", v.Type())
+}
+
+// Bash completion function constants
+const (
+	fnameDistribution = "__fbender_handle_distribution_flag"
+	fbodyDistribution = `COMPREPLY=($(compgen -W "uniform exponential" -- "${cur}"))`
+)
+
+// BashCompletionProtocol adds bash completion to a distribution flag
+func BashCompletionDistribution(cmd *cobra.Command, f *pflag.FlagSet, name string) error {
+	flag := f.Lookup(name)
+	if flag == nil {
+		return fmt.Errorf("flag %s accessed but not defined", name)
+	}
+	if _, ok := flag.Value.(*Distribution); !ok {
+		return fmt.Errorf("trying to autocomplete distribution on flag of type %s", flag.Value.Type())
+	}
+	return utils.BashCompletion(cmd, f, name, fnameDistribution, fbodyDistribution)
 }

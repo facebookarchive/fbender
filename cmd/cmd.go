@@ -16,6 +16,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/facebookincubator/fbender/cmd/core"
 	"github.com/facebookincubator/fbender/cmd/dhcpv4"
 	"github.com/facebookincubator/fbender/cmd/dhcpv6"
 	"github.com/facebookincubator/fbender/cmd/dns"
@@ -75,20 +76,6 @@ other output. Available levels (both numbers and literals are accepted):
   fbender http concurrency constraints -t $TARGET 20 -c "MAX(errors)<5"
   fbender dhcpv6 throughput constraints -t $TARGET 50 -c "MIN(latency)<20"
   fbender dns throughput constraints -t $TARGET 40 -c -g ^10 "MAX(errors)<5"`,
-	BashCompletionFunction: `__fbender_handle_constraint_flag()
-	{
-		COMPREPLY=($(compgen -W "uniform exponential" -- "${cur}"))
-	}
-
-	__fbender_handle_loglevel_flag()
-	{
-		COMPREPLY=($(compgen -W "panic fatal error warning info debug" -- "${cur}"))
-	}
-
-	__fbender_handle_logformat_flag()
-	{
-		COMPREPLY=($(compgen -W "text json" -- "${cur}"))
-	}`,
 }
 
 func initIOFlags() {
@@ -107,14 +94,14 @@ func initIOFlags() {
 	logLevel := &flags.LogLevel{Logger: logrus.StandardLogger()}
 	logLevelChoices := flags.ChoicesString(flags.LogLevelChoices())
 	Command.PersistentFlags().VarP(logLevel, "verbosity", "v", fmt.Sprintf("verbosity level %s", logLevelChoices))
-	if err := cobra.MarkFlagCustom(Command.PersistentFlags(), "verbosity", "__fbender_handle_loglevel_flag"); err != nil {
+	if err := flags.BashCompletionLogLevel(Command, Command.PersistentFlags(), "verbosity"); err != nil {
 		panic(err)
 	}
 	// Log format
 	logFormat := &flags.LogFormat{Logger: logrus.StandardLogger(), Format: "json"}
 	logFormatChoices := flags.ChoicesString(flags.LogFormatChoices())
 	Command.PersistentFlags().VarP(logFormat, "format", "f", fmt.Sprintf("output format %s", logFormatChoices))
-	if err := cobra.MarkFlagCustom(Command.PersistentFlags(), "format", "__fbender_handle_logformat_flag"); err != nil {
+	if err := flags.BashCompletionLogFormat(Command, Command.PersistentFlags(), "format"); err != nil {
 		panic(err)
 	}
 }
@@ -126,7 +113,7 @@ func initExecutionFlags() {
 	distribution := flags.NewDefaultDistribution()
 	distributionChoices := flags.ChoicesString(flags.DistributionChoices())
 	Command.PersistentFlags().VarP(distribution, "dist", "D", fmt.Sprintf("requests distribution %s", distributionChoices))
-	if err := cobra.MarkFlagCustom(Command.PersistentFlags(), "dist", "__fbender_handle_constraint_flag"); err != nil {
+	if err := flags.BashCompletionDistribution(Command, Command.PersistentFlags(), "dist"); err != nil {
 		panic(err)
 	}
 	// Other settings
@@ -148,6 +135,9 @@ func init() {
 		}
 	}
 	Command.AddCommand(completionCmd)
+	// Start post init functions
+	core.PostInit <- struct{}{}
+	core.PostInitWaitGroup.Wait()
 }
 
 // Execute runs the Command
