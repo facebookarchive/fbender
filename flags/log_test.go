@@ -43,12 +43,14 @@ func tempFilename(dir, prefix string) string {
 }
 
 func TestLogLevelChoices(t *testing.T) {
-	expected := []string{"panic", "fatal", "error", "warning", "info", "debug"}
+	expected := []string{"panic", "fatal", "error", "warning", "info", "debug", "trace"}
 	assert.ElementsMatch(t, flags.LogLevelChoices(), expected)
 }
 
 func TestLogLevel__String(t *testing.T) {
 	logLevel := &flags.LogLevel{Logger: logrus.New()}
+	logLevel.Logger.SetLevel(logrus.TraceLevel)
+	assert.Equal(t, "trace", logLevel.String())
 	logLevel.Logger.SetLevel(logrus.DebugLevel)
 	assert.Equal(t, "debug", logLevel.String())
 	logLevel.Logger.SetLevel(logrus.InfoLevel)
@@ -67,7 +69,9 @@ func TestLogLevel__Set(t *testing.T) {
 	logger := logrus.New()
 	logLevel := &flags.LogLevel{Logger: logger}
 	// Setting proper level by name should change the Level value
-	err := logLevel.Set("debug")
+	err := logLevel.Set("trace")
+	assert.NoError(t, err)
+	err = logLevel.Set("debug")
 	assert.NoError(t, err)
 	assert.Equal(t, logrus.DebugLevel, logger.Level)
 	err = logLevel.Set("info")
@@ -86,6 +90,8 @@ func TestLogLevel__Set(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, logrus.PanicLevel, logger.Level)
 	// Setting proper level by number should change the Level value
+	err = logLevel.Set("6")
+	assert.NoError(t, err)
 	err = logLevel.Set("5")
 	assert.NoError(t, err)
 	assert.Equal(t, logrus.DebugLevel, logger.Level)
@@ -106,10 +112,10 @@ func TestLogLevel__Set(t *testing.T) {
 	assert.Equal(t, logrus.PanicLevel, logger.Level)
 	// Setting unknown level string should fail
 	err = logLevel.Set("unknown")
-	assert.EqualError(t, err, "level must be an integer [0..5] or (panic|fatal|error|warning|info|debug)")
+	assert.EqualError(t, err, "level must be an integer [0..6] or (panic|fatal|error|warning|info|debug|trace)")
 	// Setting too large integer
-	err = logLevel.Set("6")
-	assert.EqualError(t, err, "level must be an integer [0..5] or (panic|fatal|error|warning|info|debug)")
+	err = logLevel.Set("7")
+	assert.EqualError(t, err, "level must be an integer [0..6] or (panic|fatal|error|warning|info|debug|trace)")
 }
 
 func TestLogLevel__Type(t *testing.T) {
@@ -129,7 +135,7 @@ func TestBashCompletionLogLevel(t *testing.T) {
 		f.Annotations["cobra_annotation_bash_completion_custom"])
 	assert.Equal(t, `
 __fbender_handle_loglevel_flag() {
-	COMPREPLY=($(compgen -W "panic fatal error warning info debug" -- "${cur}"))
+	COMPREPLY=($(compgen -W "panic fatal error warning info debug trace" -- "${cur}"))
 }`, c.BashCompletionFunction)
 	// Check error when flag is not defined
 	err = flags.BashCompletionLogLevel(c, c.Flags(), "nonexistent")
