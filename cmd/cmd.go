@@ -135,9 +135,7 @@ func init() {
 		}
 	}
 	Command.AddCommand(completionCmd)
-	// Start post init functions
-	core.PostInit <- struct{}{}
-	core.PostInitWaitGroup.Wait()
+	core.StartPostInit()
 }
 
 // Execute runs the Command

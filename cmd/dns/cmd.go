@@ -38,5 +38,13 @@ var Command = core.NewTestCommand(template, params)
 
 func init() {
 	Command.PersistentFlags().BoolP("randomize", "r", false, "randomize queries with timestamp and a random hex")
-	Command.PersistentFlags().StringP("protocol", "p", "udp", "protocol to use for DNS queries. Can be tcp or udp")
+	core.DeferPostInit(postinit)
+}
+
+func postinit() {
+	protocol := NewProtocolValue()
+	Command.PersistentFlags().VarP(protocol, "protocol", "p", "protocol used for DNS queries (udp|tcp)")
+	if err := BashCompletionProtocol(Command, Command.PersistentFlags(), "protocol"); err != nil {
+		panic(err)
+	}
 }
