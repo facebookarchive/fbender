@@ -98,36 +98,36 @@ func (s *OptionCodeSliceValueTestSuite) TestType() {
 
 func (s *OptionCodeSliceValueTestSuite) TestString_Known() {
 	// No options
-	s.Assert().Equal("[]", s.value.String())
+	s.Assert().Equal("", s.value.String())
 
 	// Single option
 	err := s.value.Set("1")
 	s.Require().NoError(err)
 	v := s.value.String()
-	s.Assert().Equal("[OPTION_CLIENTID]", v)
+	s.Assert().Equal("OPTION_CLIENTID", v)
 
 	// Multiple options
 	err = s.value.Set("2,3")
 	s.Require().NoError(err)
 	v = s.value.String()
-	s.Assert().Equal("[OPTION_CLIENTID,OPTION_SERVERID,OPTION_IA_NA]", v)
+	s.Assert().Equal("OPTION_CLIENTID, OPTION_SERVERID, OPTION_IA_NA", v)
 }
 
 func (s *OptionCodeSliceValueTestSuite) TestString_Unknown() {
 	// No options
-	s.Assert().Equal("[]", s.value.String())
+	s.Assert().Equal("", s.value.String())
 
 	// Single option
 	err := s.value.Set("10")
 	s.Require().NoError(err)
 	v := s.value.String()
-	s.Assert().Equal("[Unknown(10)]", v)
+	s.Assert().Equal("unknown (10)", v)
 
 	// Multiple options
 	err = s.value.Set("35,255")
 	s.Require().NoError(err)
 	v = s.value.String()
-	s.Assert().Equal("[Unknown(10),Unknown(35),Unknown(255)]", v)
+	s.Assert().Equal("unknown (10), unknown (35), unknown (255)", v)
 }
 
 func (s *OptionCodeSliceValueTestSuite) TestGetOptionCodes() {

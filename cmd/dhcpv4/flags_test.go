@@ -33,7 +33,7 @@ func (s *OptionCodeSliceValueTestSuite) TestSet_NoErrors() {
 	s.Require().NoError(err)
 	v, err := flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
-	o := []dhcpv4.OptionCode{dhcpv4.OptionSubnetMask, dhcpv4.OptionTimeOffset}
+	o := dhcpv4.OptionCodeList{dhcpv4.OptionSubnetMask, dhcpv4.OptionTimeOffset}
 	s.Assert().Equal(o, v)
 
 	// Check if consecutive calls append values
@@ -98,36 +98,36 @@ func (s *OptionCodeSliceValueTestSuite) TestType() {
 
 func (s *OptionCodeSliceValueTestSuite) TestString_Known() {
 	// No options
-	s.Assert().Equal("[]", s.value.String())
+	s.Assert().Equal("", s.value.String())
 
 	// Single option
 	err := s.value.Set("1")
 	s.Require().NoError(err)
 	v := s.value.String()
-	s.Assert().Equal("[Subnet Mask]", v)
+	s.Assert().Equal("Subnet Mask", v)
 
 	// Multiple options
 	err = s.value.Set("2,3")
 	s.Require().NoError(err)
 	v = s.value.String()
-	s.Assert().Equal("[Subnet Mask,Time Offset,Router]", v)
+	s.Assert().Equal("Subnet Mask, Time Offset, Router", v)
 }
 
 func (s *OptionCodeSliceValueTestSuite) TestString_Unknown() {
 	// No options
-	s.Assert().Equal("[]", s.value.String())
+	s.Assert().Equal("", s.value.String())
 
 	// Single option
 	err := s.value.Set("84")
 	s.Require().NoError(err)
 	v := s.value.String()
-	s.Assert().Equal("[Unknown(84)]", v)
+	s.Assert().Equal("unknown (84)", v)
 
 	// Multiple options
 	err = s.value.Set("105,224")
 	s.Require().NoError(err)
 	v = s.value.String()
-	s.Assert().Equal("[Unknown(84),Unknown(105),Unknown(224)]", v)
+	s.Assert().Equal("unknown (84), unknown (105), unknown (224)", v)
 }
 
 func (s *OptionCodeSliceValueTestSuite) TestGetOptionCodes() {
@@ -139,7 +139,7 @@ func (s *OptionCodeSliceValueTestSuite) TestGetOptionCodes() {
 
 	v, err := flags.GetOptionCodes(f, "optioncodes")
 	s.Require().NoError(err)
-	s.Assert().Equal([]dhcpv4.OptionCode{dhcpv4.OptionTCPKeepaliveGarbage}, v)
+	s.Assert().Equal(dhcpv4.OptionCodeList{dhcpv4.OptionTCPKeepaliveGarbage}, v)
 
 	// Check error when flag does not exist
 	_, err = flags.GetOptionCodes(f, "nonexistent")
@@ -157,7 +157,7 @@ func (s *OptionCodeSliceValueTestSuite) TestGetOptionCodesValue() {
 
 	v, err := flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
-	s.Assert().Equal([]dhcpv4.OptionCode{dhcpv4.OptionTCPKeepaliveGarbage}, v)
+	s.Assert().Equal(dhcpv4.OptionCodeList{dhcpv4.OptionTCPKeepaliveGarbage}, v)
 
 	// Check error when value is of different type
 	f := pflag.NewFlagSet("Test FlagSet", pflag.ExitOnError)

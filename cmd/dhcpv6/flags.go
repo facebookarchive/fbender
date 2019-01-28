@@ -70,13 +70,9 @@ func (s *optionCodeSliceValue) Type() string {
 func (s *optionCodeSliceValue) String() string {
 	out := make([]string, len(*s.value))
 	for i, o := range *s.value {
-		if name, ok := dhcpv6.OptionCodeToString[o]; ok {
-			out[i] = name
-		} else {
-			out[i] = fmt.Sprintf("Unknown(%d)", o)
-		}
+		out[i] = o.String()
 	}
-	return "[" + strings.Join(out, ",") + "]"
+	return strings.Join(out, ", ")
 }
 
 // GetOptionCodes returns an option code slice from a pflag set

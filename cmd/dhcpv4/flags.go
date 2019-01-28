@@ -19,15 +19,13 @@ import (
 )
 
 type optionCodeSliceValue struct {
-	value   *[]dhcpv4.OptionCode
+	value   dhcpv4.OptionCodeList
 	changed bool
 }
 
 // NewOptionCodeSliceValue creates a new option code slice value for pflag.
 func NewOptionCodeSliceValue() pflag.Value {
-	v := []dhcpv4.OptionCode{}
 	return &optionCodeSliceValue{
-		value:   &v,
 		changed: false,
 	}
 }
@@ -46,18 +44,23 @@ func (s *optionCodeSliceValue) Set(value string) error {
 	if err != nil {
 		return err
 	}
-	optcodes := []dhcpv4.OptionCode{}
+	var buf []byte
+	var optcodes dhcpv4.OptionCodeList
 	for _, v := range values {
 		optcode, err := strconv.ParseUint(v, 10, 8)
 		if err != nil {
 			return err
 		}
-		optcodes = append(optcodes, dhcpv4.OptionCode(optcode))
+		buf = append(buf, byte(uint8(optcode)))
+	}
+	err = optcodes.FromBytes(buf)
+	if err != nil {
+		return err
 	}
 	if !s.changed {
-		*s.value = optcodes
+		s.value = optcodes
 	} else {
-		*s.value = append(*s.value, optcodes...)
+		s.value.Add(optcodes...)
 	}
 	s.changed = true
 	return nil
@@ -68,19 +71,11 @@ func (s *optionCodeSliceValue) Type() string {
 }
 
 func (s *optionCodeSliceValue) String() string {
-	out := make([]string, len(*s.value))
-	for i, o := range *s.value {
-		if name, ok := dhcpv4.OptionCodeToString[o]; ok {
-			out[i] = name
-		} else {
-			out[i] = fmt.Sprintf("Unknown(%d)", o)
-		}
-	}
-	return "[" + strings.Join(out, ",") + "]"
+	return s.value.String()
 }
 
 // GetOptionCodes returns an option code slice from a pflag set
-func GetOptionCodes(f *pflag.FlagSet, name string) ([]dhcpv4.OptionCode, error) {
+func GetOptionCodes(f *pflag.FlagSet, name string) (dhcpv4.OptionCodeList, error) {
 	flag := f.Lookup(name)
 	if flag == nil {
 		return nil, fmt.Errorf("flag %s accessed but not defined", name)
@@ -89,9 +84,9 @@ func GetOptionCodes(f *pflag.FlagSet, name string) ([]dhcpv4.OptionCode, error) 
 }
 
 // GetOptionCodesValue returns an option code slice from a pflag value
-func GetOptionCodesValue(v pflag.Value) ([]dhcpv4.OptionCode, error) {
+func GetOptionCodesValue(v pflag.Value) (dhcpv4.OptionCodeList, error) {
 	if optcodes, ok := v.(*optionCodeSliceValue); ok {
-		return *optcodes.value, nil
+		return optcodes.value, nil
 	}
 	return nil, fmt.Errorf("trying to get option codes value of flag of type %s", v.Type())
 }

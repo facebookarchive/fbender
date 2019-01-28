@@ -56,12 +56,11 @@ func inputTransformer(optionCodes []dhcpv4.OptionCode) input.Transformer {
 		if err != nil {
 			return nil, err
 		}
-		discover.SetHwType(iana.HwTypeEthernet)
-		discover.SetHwAddrLen(uint8(len(mac)))
-		discover.SetClientHwAddr(mac)
-		discover.AddOption(&dhcpv4.OptMessageType{MessageType: dhcpv4.MessageTypeDiscover})
+		discover.HWType = iana.HWTypeEthernet
+		discover.ClientHWAddr = mac
+		discover.UpdateOption(dhcpv4.OptMessageType(dhcpv4.MessageTypeDiscover))
 		optionCodes = append(optionCodes, defaultCodes...)
-		discover = dhcpv4.WithRequestedOptions(optionCodes...)(discover)
+		dhcpv4.WithRequestedOptions(optionCodes...)(discover)
 		return discover, nil
 	}
 }
