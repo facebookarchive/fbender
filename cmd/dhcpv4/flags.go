@@ -47,11 +47,12 @@ func (s *optionCodeSliceValue) Set(value string) error {
 	var buf []byte
 	var optcodes dhcpv4.OptionCodeList
 	for _, v := range values {
-		optcode, err := strconv.ParseUint(v, 10, 8)
+		var optcode uint64
+		optcode, err = strconv.ParseUint(v, 10, 8)
 		if err != nil {
 			return err
 		}
-		buf = append(buf, byte(uint8(optcode)))
+		buf = append(buf, byte(optcode))
 	}
 	err = optcodes.FromBytes(buf)
 	if err != nil {
