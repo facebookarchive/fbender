@@ -113,7 +113,7 @@ const (
 	fbodyDistribution = `COMPREPLY=($(compgen -W "uniform exponential" -- "${cur}"))`
 )
 
-// BashCompletionProtocol adds bash completion to a distribution flag
+// BashCompletionDistribution adds bash completion to a distribution flag
 func BashCompletionDistribution(cmd *cobra.Command, f *pflag.FlagSet, name string) error {
 	flag := f.Lookup(name)
 	if flag == nil {

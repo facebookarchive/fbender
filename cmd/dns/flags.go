@@ -27,6 +27,7 @@ type protocolValue struct {
 	value string
 }
 
+// NewProtocolValue returns new Protocol flag with a default value.
 func NewProtocolValue() pflag.Value {
 	return &protocolValue{value: "udp"}
 }
