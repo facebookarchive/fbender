@@ -23,10 +23,11 @@ hitting the cache. In bash this could have been achieved by running:
 Target: ipv4, ipv6, hostname, ipv4:port, [ipv6]:port, hostname:port.
 The port defaults to 53.
 
-Input format: "Domain QType"
+Input format: "Domain QType [Rcode]"
   example.com AAAA
-  other.example.com TXT
-  mail.example.com MX`,
+  other.example.com TXT NOERROR
+  mail.example.com MX
+	www.doesnotexist.co.uk NXDOMAIN`,
 	Fixed: `  fbender dns {test} fixed -t $TARGET 10 20
   fbender dns {test} fixed -t $TARGET -r -d 5m 50`,
 	Constraints: `  fbender dns {test} constraints -t $TARGET -r -c "AVG(latency)<10" 20

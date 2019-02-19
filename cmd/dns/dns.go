@@ -48,17 +48,25 @@ func params(cmd *cobra.Command, o *options.Options) (*runner.Params, error) {
 }
 
 func inputTransformer(input string) (interface{}, error) {
-	var domain, typeString string
-	n, err := fmt.Sscanf(input, "%s %s", &domain, &typeString)
-	if err != nil || n < 2 {
-		return nil, fmt.Errorf("invalid input: %q, want: \"Domain QType\"", input)
+	var domain, typeString, rcodeString string
+	n, err := fmt.Sscanf(input, "%s %s %s", &domain, &typeString, &rcodeString)
+	if err != nil && n < 2 {
+		return nil, fmt.Errorf("invalid input: %q, want: \"Domain QType [RCode]\"", input)
 	}
 	msgTyp, ok := dns.StringToType[strings.ToUpper(typeString)]
 	if !ok {
 		return nil, fmt.Errorf("invalid QType: %q", typeString)
 	}
-	msg := new(dns.Msg)
+	msg := new(tester.ExtendedMsg)
 	msg.SetQuestion(dns.Fqdn(domain), msgTyp)
+	msg.Rcode = -1
+	if n == 3 {
+		rcode, ok := dns.StringToRcode[rcodeString]
+		if !ok {
+			return nil, fmt.Errorf("invalid RCode: %q", rcodeString)
+		}
+		msg.Rcode = rcode
+	}
 	return msg, nil
 }
 
@@ -72,18 +80,19 @@ func getModifiers(randomize bool) []input.Modifier {
 const prefixLength = 16
 
 func randomPrefixModifier(request interface{}) (interface{}, error) {
-	msg, ok := request.(*dns.Msg)
+	msg, ok := request.(*tester.ExtendedMsg)
 	if !ok {
-		return nil, fmt.Errorf("invalid request type: %T, want: *dns.Msg", request)
+		return nil, fmt.Errorf("invalid request type: %T, want: *dns.ExtendedMsg", request)
 	}
 	hex, err := utils.RandomHex(prefixLength)
 	if err != nil {
 		return nil, err
 	}
 	// Create a new message so we don't destroy the original to avoid recursive prefixing
-	modified := new(dns.Msg)
+	modified := new(tester.ExtendedMsg)
 	domain := fmt.Sprintf("%d.%s.%s", time.Now().Unix(), hex, msg.Question[0].Name)
 	msgTyp := msg.Question[0].Qtype
 	modified.SetQuestion(dns.Fqdn(domain), msgTyp)
+	modified.Rcode = msg.Rcode
 	return modified, nil
 }

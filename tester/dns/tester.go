@@ -17,6 +17,12 @@ import (
 	protocol "github.com/pinterest/bender/dns"
 )
 
+// ExtendedMsg wraps a dns.Msg with expectations
+type ExtendedMsg struct {
+	dns.Msg
+	Rcode int
+}
+
 // Tester is a load tester for DNS
 type Tester struct {
 	Target   string
@@ -56,5 +62,26 @@ func validator(request, response *dns.Msg) error {
 
 // RequestExecutor returns a request executor
 func (t *Tester) RequestExecutor(options interface{}) (bender.RequestExecutor, error) {
-	return protocol.CreateExecutor(t.client, validator, t.Target), nil
+	innerExecutor := protocol.CreateExecutor(t.client, validator, t.Target)
+
+	return func(n int64, request interface{}) (interface{}, error) {
+		asExtended, ok := request.(*ExtendedMsg)
+		if !ok {
+			return nil, fmt.Errorf("request type is not ExtendedMsg")
+		}
+		resp, err := innerExecutor(n, &asExtended.Msg)
+		if err != nil {
+			return resp, err
+		}
+		asMsg, ok := resp.(*dns.Msg)
+		if !ok {
+			return nil, fmt.Errorf("reponse type is not dns.Msg")
+		}
+		if asExtended.Rcode != -1 && asExtended.Rcode != asMsg.Rcode {
+			return resp, fmt.Errorf(
+				"invalid rcode %s, want: %s",
+				dns.RcodeToString[asMsg.Rcode], dns.RcodeToString[asExtended.Rcode])
+		}
+		return resp, nil
+	}, nil
 }
