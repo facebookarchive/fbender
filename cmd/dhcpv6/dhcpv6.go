@@ -12,7 +12,6 @@ import (
 	"net"
 
 	"github.com/insomniacslk/dhcp/dhcpv6"
-	"github.com/insomniacslk/dhcp/iana"
 	"github.com/spf13/cobra"
 
 	"github.com/facebookincubator/fbender/cmd/core/input"
@@ -45,12 +44,6 @@ func inputTransformer(optionCodes []dhcpv6.OptionCode) input.Transformer {
 		if err != nil {
 			return nil, err
 		}
-		duid := dhcpv6.Duid{
-			Type:          dhcpv6.DUID_LLT,
-			HwType:        iana.HWTypeEthernet,
-			Time:          dhcpv6.GetTime(),
-			LinkLayerAddr: mac,
-		}
-		return dhcpv6.NewSolicitWithCID(duid, dhcpv6.WithRequestedOptions(optionCodes...))
+		return dhcpv6.NewSolicit(mac, dhcpv6.WithRequestedOptions(optionCodes...))
 	}
 }
