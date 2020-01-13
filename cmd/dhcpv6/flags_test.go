@@ -104,13 +104,13 @@ func (s *OptionCodeSliceValueTestSuite) TestString_Known() {
 	err := s.value.Set("1")
 	s.Require().NoError(err)
 	v := s.value.String()
-	s.Assert().Equal("OPTION_CLIENTID", v)
+	s.Assert().Equal("Client Identifier", v)
 
 	// Multiple options
 	err = s.value.Set("2,3")
 	s.Require().NoError(err)
 	v = s.value.String()
-	s.Assert().Equal("OPTION_CLIENTID, OPTION_SERVERID, OPTION_IA_NA", v)
+	s.Assert().Equal("Client Identifier, Server Identifier, IA_NA", v)
 }
 
 func (s *OptionCodeSliceValueTestSuite) TestString_Unknown() {
