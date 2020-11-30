@@ -1,0 +1,42 @@
+name: Go
+
+on: [push, pull_request]
+
+jobs:
+
+  build:
+
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.14', '1.15']
+
+    steps:
+
+    - name: Set up Go ${{ matrix.go-version }}
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Get dependencies
+      run: go get -d -t -v ./...
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: |
+        for package in $(go list ... | grep -e "github.com/facebookincubator/fbender"); do
+          go test -race -coverprofile=profile.out -covermode=atomic "$package"
+          if [ -f profile.out ]; then
+            cat profile.out >> coverage.txt
+            rm profile.out
+          fi
+        done
+
+    - name: Upload reports to Codecov
+      run: bash <(curl -s https://codecov.io/bash)
