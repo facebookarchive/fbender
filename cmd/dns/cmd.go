@@ -12,6 +12,7 @@ import (
 	"github.com/facebookincubator/fbender/cmd/core"
 )
 
+//nolint:gochecknoglobals
 var template = &core.CommandTemplate{
 	Name:  "dns",
 	Short: "Test DNS",
@@ -34,9 +35,11 @@ Input format: "Domain QType [Rcode]"
   fbender dns {test} constraints -t $TARGET -g ^10 -c "MAX(errors)<10" 40`,
 }
 
-// Command is the DNS subcommand
+// Command is the DNS subcommand.
+//nolint:gochecknoglobals
 var Command = core.NewTestCommand(template, params)
 
+//nolint:gochecknoinits
 func init() {
 	Command.PersistentFlags().BoolP("randomize", "r", false, "randomize queries with timestamp and a random hex")
 	core.DeferPostInit(postinit)
@@ -44,7 +47,9 @@ func init() {
 
 func postinit() {
 	protocol := NewProtocolValue()
+
 	Command.PersistentFlags().VarP(protocol, "protocol", "p", "protocol used for DNS queries (udp|tcp)")
+
 	if err := BashCompletionProtocol(Command, Command.PersistentFlags(), "protocol"); err != nil {
 		panic(err)
 	}

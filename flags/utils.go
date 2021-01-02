@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-// ChoicesString converts choices list into printable text
+// ChoicesString converts choices list into printable text.
 func ChoicesString(choices []string) string {
 	return fmt.Sprintf("(%s)", strings.Join(choices, "|"))
 }

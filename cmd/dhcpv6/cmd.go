@@ -12,6 +12,7 @@ import (
 	"github.com/facebookincubator/fbender/cmd/core"
 )
 
+//nolint:gochecknoglobals
 var template = &core.CommandTemplate{
 	Name:  "dhcpv6",
 	Short: "Test DHCPv6",
@@ -29,9 +30,11 @@ Input format: "DeviceMAC"
   fbender dhcpv6 {test} constraints -t $TARGET -g ^10 -c "MAX(errors)<10" 40`,
 }
 
-// Command is the TFTP subcommand
+// Command is the TFTP subcommand.
+//nolint:gochecknoglobals
 var Command = core.NewTestCommand(template, params)
 
+//nolint:gochecknoinits
 func init() {
 	optionCodes := NewOptionCodeSliceValue()
 	Command.PersistentFlags().VarP(optionCodes, "oro", "r", "dhcpv6 requested options (ORO)")

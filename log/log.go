@@ -17,7 +17,8 @@ import (
 	"os"
 )
 
-// Standard writers for the log package
+// Standard writers for the log package.
+//nolint:gochecknoglobals
 var (
 	Stderr io.Writer = os.Stderr
 	Stdout io.Writer = os.Stdout

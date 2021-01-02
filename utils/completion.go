@@ -27,5 +27,6 @@ func BashCompletion(cmd *cobra.Command, flags *pflag.FlagSet, flag string, fname
 	if !strings.Contains(cmd.Root().BashCompletionFunction, fname) {
 		cmd.Root().BashCompletionFunction += fmt.Sprintf(template, fname, fbody)
 	}
+
 	return cobra.MarkFlagCustom(flags, flag, fname)
 }

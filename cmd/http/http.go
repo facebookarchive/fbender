@@ -16,12 +16,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/spf13/cobra"
-
 	"github.com/facebookincubator/fbender/cmd/core/input"
 	"github.com/facebookincubator/fbender/cmd/core/options"
 	"github.com/facebookincubator/fbender/cmd/core/runner"
 	tester "github.com/facebookincubator/fbender/tester/http"
+	"github.com/spf13/cobra"
 )
 
 const formats = "'GET RelativeURL' or 'POST RelativeURL FormData'"
@@ -31,13 +30,16 @@ func params(cmd *cobra.Command, o *options.Options) (*runner.Params, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	r, err := input.NewRequestGenerator(o.Input, inputTransformer(ssl, o.Target), requestCreator)
 	if err != nil {
 		return nil, err
 	}
+
 	t := &tester.Tester{
 		Timeout: o.Timeout,
 	}
+
 	return &runner.Params{Tester: t, RequestGenerator: r}, nil
 }
 
@@ -46,11 +48,13 @@ func inputTransformer(ssl bool, target string) input.Transformer {
 	if ssl {
 		protocol = "https"
 	}
+
 	return func(input string) (interface{}, error) {
 		i := strings.Index(input, " ")
 		if i < 0 {
 			return nil, fmt.Errorf("input must have a format of %s, got '%s'", formats, input)
 		}
+
 		method, data := input[:i], input[i+1:]
 		switch method {
 		case "GET":
@@ -58,6 +62,7 @@ func inputTransformer(ssl bool, target string) input.Transformer {
 		case "POST":
 			return parsePostRequest(protocol, target, data)
 		}
+
 		return nil, fmt.Errorf("unknown method %s, want (GET|POST)", method)
 	}
 }
@@ -71,6 +76,7 @@ type getRequest struct {
 }
 
 func (r *getRequest) Create() (*http.Request, error) {
+	//nolint:noctx
 	return http.NewRequest("GET", r.url, nil)
 }
 
@@ -79,6 +85,7 @@ func parseGetRequest(protocol, target, data string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &getRequest{url: rawurl}, nil
 }
 
@@ -88,12 +95,15 @@ type postRequest struct {
 }
 
 func (r *postRequest) Create() (*http.Request, error) {
+	//nolint:noctx
 	req, err := http.NewRequest("POST", r.url, strings.NewReader(r.body))
 	if err != nil {
 		return nil, err
 	}
+
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Content-Length", strconv.Itoa(len(r.body)))
+
 	return req, nil
 }
 
@@ -102,14 +112,17 @@ func parsePostRequest(protocol, target, data string) (interface{}, error) {
 	if i < 0 {
 		return nil, fmt.Errorf("input must have a format of %s, got 'POST %s'", formats, data)
 	}
+
 	form, err := url.ParseQuery(data[i+1:])
 	if err != nil {
 		return nil, err
 	}
+
 	rawurl, err := joinURL(protocol, target, data[:i])
 	if err != nil {
 		return nil, err
 	}
+
 	return &postRequest{url: rawurl, body: form.Encode()}, nil
 }
 
@@ -120,6 +133,7 @@ func requestCreator(r interface{}) (interface{}, error) {
 	if r, ok := r.(request); ok {
 		return r.Create()
 	}
+
 	return nil, errors.New("invalid request type")
 }
 
@@ -127,5 +141,6 @@ func joinURL(protocol, target, path string) (string, error) {
 	path = strings.TrimPrefix(path, "/")
 	rawurl := fmt.Sprintf("%s://%s/%s", protocol, target, path)
 	_, err := url.Parse(rawurl)
+
 	return rawurl, err
 }

@@ -15,58 +15,58 @@ import (
 	"strings"
 )
 
-// Growth is used to determine what test should be ran next
+// Growth is used to determine what test should be ran next.
 type Growth interface {
 	OnSuccess(test int) int
 	OnFail(test int) int
 	String() string
 }
 
-// LinearGrowth increases test by a specified amount with every successful test
+// LinearGrowth increases test by a specified amount with every successful test.
 type LinearGrowth struct {
 	Increase int
 }
 
-// LinearGrowthPrefix prefix used in linear growth string representation
+// LinearGrowthPrefix prefix used in linear growth string representation.
 const LinearGrowthPrefix = "+"
 
 func (g *LinearGrowth) String() string {
 	return fmt.Sprintf("%s%d", LinearGrowthPrefix, g.Increase)
 }
 
-// OnSuccess increases test by a specified amount
+// OnSuccess increases test by a specified amount.
 func (g *LinearGrowth) OnSuccess(test int) int {
 	return test + g.Increase
 }
 
-// OnFail stops the tests
+// OnFail stops the tests.
 func (g *LinearGrowth) OnFail(test int) int {
 	return 0
 }
 
-// PercentageGrowth increases test by a specified percentage with every successful test
+// PercentageGrowth increases test by a specified percentage with every successful test.
 type PercentageGrowth struct {
 	Increase float64
 }
 
-// PercentageGrowthPrefix prefix used in percentage growth string representation
+// PercentageGrowthPrefix prefix used in percentage growth string representation.
 const PercentageGrowthPrefix = "%"
 
 func (g *PercentageGrowth) String() string {
 	return fmt.Sprintf("%s%.2f", PercentageGrowthPrefix, g.Increase)
 }
 
-// OnSuccess increases test by a specified percentage
+// OnSuccess increases test by a specified percentage.
 func (g *PercentageGrowth) OnSuccess(test int) int {
 	return int((100. + g.Increase) / 100. * float64(test))
 }
 
-// OnFail stops the tests
+// OnFail stops the tests.
 func (g *PercentageGrowth) OnFail(test int) int {
 	return 0
 }
 
-// ExponentialGrowth performs binary search up to a given precision
+// ExponentialGrowth performs binary search up to a given precision.
 type ExponentialGrowth struct {
 	Precision int
 
@@ -74,7 +74,7 @@ type ExponentialGrowth struct {
 	bound       bool
 }
 
-// ExponentialGrowthPrefix prefix used in exponential growth string representation
+// ExponentialGrowthPrefix prefix used in exponential growth string representation.
 const ExponentialGrowthPrefix = "^"
 
 func (g *ExponentialGrowth) String() string {
@@ -88,9 +88,11 @@ func (g *ExponentialGrowth) OnSuccess(test int) int {
 	if !g.bound {
 		return test * 2
 	}
+
 	if g.right-g.left <= g.Precision {
 		return 0
 	}
+
 	return int(float64(g.right+g.left) / 2)
 }
 
@@ -99,13 +101,15 @@ func (g *ExponentialGrowth) OnSuccess(test int) int {
 func (g *ExponentialGrowth) OnFail(test int) int {
 	g.right = test
 	g.bound = true
+
 	if g.right-g.left <= g.Precision {
 		return 0
 	}
+
 	return int(float64(g.right+g.left) / 2)
 }
 
-// GrowthHelp provides usage help about the growth
+// GrowthHelp provides usage help about the growth.
 const GrowthHelp = `Growth determines what will be the next value used for a test.
 * linear growth (+int) increases test value by a fixed amount after each success,
   stops immediately after the first failure
@@ -114,10 +118,10 @@ const GrowthHelp = `Growth determines what will be the next value used for a tes
 * exponential growth (^int) first doubles the test value after each success to
   find an upper bound, then performs a binary search up to a given precision`
 
-// ErrInvalidGrowth is returned when a growth cannot be found
+// ErrInvalidGrowth is returned when a growth cannot be found.
 var ErrInvalidGrowth = errors.New("unknown growth, want +int, %%flaot, ^int")
 
-// ParseGrowth creates a growth from its string representation
+// ParseGrowth creates a growth from its string representation.
 func ParseGrowth(value string) (Growth, error) {
 	switch {
 	case strings.HasPrefix(value, LinearGrowthPrefix):
@@ -125,19 +129,25 @@ func ParseGrowth(value string) (Growth, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		return &LinearGrowth{Increase: inc}, nil
+
 	case strings.HasPrefix(value, PercentageGrowthPrefix):
 		inc, err := strconv.ParseFloat(strings.TrimPrefix(value, PercentageGrowthPrefix), 64)
 		if err != nil {
 			return nil, err
 		}
+
 		return &PercentageGrowth{Increase: inc}, nil
+
 	case strings.HasPrefix(value, ExponentialGrowthPrefix):
 		prec, err := strconv.Atoi(strings.TrimPrefix(value, ExponentialGrowthPrefix))
 		if err != nil {
 			return nil, err
 		}
+
 		return &ExponentialGrowth{Precision: prec}, nil
+
 	default:
 		return nil, ErrInvalidGrowth
 	}

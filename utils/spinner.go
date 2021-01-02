@@ -12,12 +12,11 @@ import (
 	"context"
 	"time"
 
-	spin "github.com/tj/go-spin"
-
 	"github.com/facebookincubator/fbender/log"
+	spin "github.com/tj/go-spin"
 )
 
-// Default refresh rate
+// Default refresh rate.
 const spinnerRefresh = 100 * time.Millisecond
 
 // NewBackgroundSpinner creates a new spinner which runs in background refreshing
@@ -30,8 +29,10 @@ func NewBackgroundSpinner(description string, refresh time.Duration) context.Can
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+
 	spinner := spin.New()
 	spinner.Set(spin.Spin1)
+
 	sync := make(chan bool)
 
 	go func() {
@@ -41,6 +42,7 @@ func NewBackgroundSpinner(description string, refresh time.Duration) context.Can
 			case <-ctx.Done():
 				log.Errorf("Done.\n")
 				sync <- false
+
 				return
 			default:
 				log.Errorf("%s", spinner.Next())

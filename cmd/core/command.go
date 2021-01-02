@@ -12,13 +12,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/spf13/cobra"
-
 	"github.com/facebookincubator/fbender/cmd/core/options"
 	"github.com/facebookincubator/fbender/cmd/core/runner"
+	"github.com/spf13/cobra"
 )
 
-// CommandParams is used to generate params for the runner
+// CommandParams is used to generate params for the runner.
 type CommandParams func(*cobra.Command, *options.Options) (*runner.Params, error)
 
 // CommandTemplate groups parameters used to generate the test command.
@@ -32,11 +31,12 @@ type CommandTemplate struct {
 	Fixed, Constraints string
 }
 
-// NewTestCommand creates a protocol command with all the test subcommands
+// NewTestCommand creates a protocol command with all the test subcommands.
 // ${protocol} throughput fixed
 // ${protocol} throughput constraints
 // ${protocol} concurrency fixed
 // ${protocol} concurrency constraints
+//nolint:funlen
 func NewTestCommand(c *CommandTemplate, p CommandParams) *cobra.Command {
 	// Help messages
 	var (
@@ -48,18 +48,20 @@ func NewTestCommand(c *CommandTemplate, p CommandParams) *cobra.Command {
 		cfShort = fmt.Sprintf("%s with fixed number of connections", cShort)
 		ccShort = fmt.Sprintf("%s with constraints", cShort)
 	)
+
 	// Examples
 	var (
-		tfExamples = strings.Replace(c.Fixed, "{test}", "throughput", -1)
-		tcExamples = strings.Replace(c.Constraints, "{test}", "throughput", -1)
+		tfExamples = strings.ReplaceAll(c.Fixed, "{test}", "throughput")
+		tcExamples = strings.ReplaceAll(c.Constraints, "{test}", "throughput")
 		tExamples  = fmt.Sprintf("%s\n%s", tfExamples, tcExamples)
 
-		cfExamples = strings.Replace(c.Fixed, "{test}", "concurrency", -1)
-		ccExamples = strings.Replace(c.Constraints, "{test}", "concurrency", -1)
+		cfExamples = strings.ReplaceAll(c.Fixed, "{test}", "concurrency")
+		ccExamples = strings.ReplaceAll(c.Constraints, "{test}", "concurrency")
 		cExamples  = fmt.Sprintf("%s\n%s", cfExamples, ccExamples)
 
 		examples = fmt.Sprintf("%s\n%s", tExamples, cExamples)
 	)
+
 	// Top level command
 	command := &cobra.Command{
 		Use:     c.Name,
@@ -67,6 +69,7 @@ func NewTestCommand(c *CommandTemplate, p CommandParams) *cobra.Command {
 		Long:    fmt.Sprintf("%s.\n%s", c.Short, c.Long),
 		Example: examples,
 	}
+
 	// Subcommands
 	tCommand := &cobra.Command{
 		Use:     "throughput",
@@ -74,14 +77,17 @@ func NewTestCommand(c *CommandTemplate, p CommandParams) *cobra.Command {
 		Long:    fmt.Sprintf("%s.\n%s", tShort, c.Long),
 		Example: tExamples,
 	}
+
 	cCommand := &cobra.Command{
 		Use:     "concurrency",
 		Short:   cShort,
 		Long:    fmt.Sprintf("%s.\n%s", cShort, c.Long),
 		Example: cExamples,
 	}
+
 	command.AddCommand(tCommand)
 	command.AddCommand(cCommand)
+
 	// Throughput subcommands
 	tfCommand := &cobra.Command{
 		Use:     "fixed",
@@ -91,6 +97,7 @@ func NewTestCommand(c *CommandTemplate, p CommandParams) *cobra.Command {
 		Args:    fixedArgs,
 		RunE:    RunLoadTestThroughputFixed(p),
 	}
+
 	tcCommand := &cobra.Command{
 		Use:     "constraints",
 		Short:   tcShort,
@@ -99,9 +106,11 @@ func NewTestCommand(c *CommandTemplate, p CommandParams) *cobra.Command {
 		Args:    constraintsArgs,
 		RunE:    RunLoadTestThroughputConstraints(p),
 	}
+
 	tcCommand.PersistentFlags().AddFlagSet(ConstraintsFlags)
 	tCommand.AddCommand(tfCommand)
 	tCommand.AddCommand(tcCommand)
+
 	// Concurrency subcommands
 	cfCommand := &cobra.Command{
 		Use:     "fixed",
@@ -111,6 +120,7 @@ func NewTestCommand(c *CommandTemplate, p CommandParams) *cobra.Command {
 		Args:    fixedArgs,
 		RunE:    RunLoadTestConcurrencyFixed(p),
 	}
+
 	ccCommand := &cobra.Command{
 		Use:     "constraints",
 		Short:   ccShort,
@@ -119,6 +129,7 @@ func NewTestCommand(c *CommandTemplate, p CommandParams) *cobra.Command {
 		Args:    constraintsArgs,
 		RunE:    RunLoadTestConcurrencyConstraints(p),
 	}
+
 	ccCommand.PersistentFlags().AddFlagSet(ConstraintsFlags)
 	cCommand.AddCommand(cfCommand)
 	cCommand.AddCommand(ccCommand)
@@ -126,20 +137,24 @@ func NewTestCommand(c *CommandTemplate, p CommandParams) *cobra.Command {
 	return command
 }
 
-// fixedArgs validates arguments for a fixed QPS test
+// fixedArgs validates arguments for a fixed QPS test.
 func fixedArgs(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
 		return fmt.Errorf("requires at least one test value")
 	}
+
 	_, err := ExtractTests(args)
+
 	return err
 }
 
-// constraintsArgs validates arguments for a constraints tests
+// constraintsArgs validates arguments for a constraints tests.
 func constraintsArgs(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		return fmt.Errorf("requires starting test value")
 	}
+
 	_, err := ExtractTests(args)
+
 	return err
 }

@@ -12,6 +12,7 @@ import (
 	"sync"
 )
 
+//nolint:gochecknoglobals
 var (
 	postinitLock      = make(chan struct{}, 1)
 	postinitWaitGroup = &sync.WaitGroup{}
@@ -21,6 +22,7 @@ var (
 // is called.
 func DeferPostInit(postinit func()) {
 	postinitWaitGroup.Add(1)
+
 	go func() {
 		<-postinitLock
 		postinit()
@@ -33,5 +35,6 @@ func DeferPostInit(postinit func()) {
 // them are finished.
 func StartPostInit() {
 	postinitLock <- struct{}{}
+
 	postinitWaitGroup.Wait()
 }

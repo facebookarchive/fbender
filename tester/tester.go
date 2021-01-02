@@ -14,10 +14,8 @@ import (
 	"github.com/pinterest/bender"
 )
 
-var (
-	// ErrInvalidOptions is thrown when options don't implement the required interface
-	ErrInvalidOptions = errors.New("invalid options")
-)
+// ErrInvalidOptions is thrown when options don't implement the required interface.
+var ErrInvalidOptions = errors.New("invalid options")
 
 // Tester is used to setup the test for a specific endpoint.
 type Tester interface {
@@ -35,7 +33,7 @@ type Tester interface {
 	RequestExecutor(options interface{}) (bender.RequestExecutor, error)
 }
 
-// QPS is the test desired queries per second
+// QPS is the test desired queries per second.
 type QPS = int
 
 // ThroughputRunner is used to setup the test execution.
@@ -46,7 +44,7 @@ type ThroughputRunner interface {
 	// everything that was ser up in the Before.
 	After(qps QPS, options interface{})
 
-	// Protocol tester
+	// Protocol tester.
 	Tester() Tester
 
 	// Params used by LoadTestThroughput function.
@@ -56,7 +54,7 @@ type ThroughputRunner interface {
 	Recorders() []bender.Recorder
 }
 
-// Workers is the test desired concurrent workers
+// Workers is the test desired concurrent workers.
 type Workers = int
 
 // ConcurrencyRunner is used to setup concurrency test execution.
@@ -67,7 +65,7 @@ type ConcurrencyRunner interface {
 	// everything that was ser up in the Before.
 	After(workers Workers, options interface{})
 
-	// Protocol tester
+	// Protocol tester.
 	Tester() Tester
 
 	// Params used by LoadTestConcurrency function.

@@ -13,11 +13,12 @@ import (
 	"encoding/hex"
 )
 
-// RandomHex generates a random hex string of specified length
+// RandomHex generates a random hex string of specified length.
 func RandomHex(n int) (string, error) {
 	b := make([]byte, (n+1)/2)
 	if _, err := rand.Read(b); err != nil {
 		return "", err
 	}
+
 	return hex.EncodeToString(b)[:n], nil
 }

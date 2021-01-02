@@ -18,10 +18,10 @@ import (
 	"github.com/facebookincubator/fbender/log"
 )
 
-// Transformer converts input line into a request
+// Transformer converts input line into a request.
 type Transformer func(string) (interface{}, error)
 
-// Modifier changes request right before sending
+// Modifier changes request right before sending.
 type Modifier func(interface{}) (interface{}, error)
 
 // NewRequestGenerator reads data from the specified input and converts it into
@@ -34,13 +34,17 @@ func NewRequestGenerator(filename string, transformer Transformer, mods ...Modif
 	if err != nil {
 		return nil, err
 	}
+
 	defer close(file)
+
 	data := parse(file, transformer)
 	if len(data) < 1 {
 		return nil, errors.New("at least one valid input line is required")
 	}
+
 	return func(i int) interface{} {
 		var err error
+
 		request := data[i%len(data)]
 		for _, mod := range mods {
 			request, err = mod(request)
@@ -48,6 +52,7 @@ func NewRequestGenerator(filename string, transformer Transformer, mods ...Modif
 				panic(err)
 			}
 		}
+
 		return request
 	}, nil
 }
@@ -58,23 +63,28 @@ func NewRequestGenerator(filename string, transformer Transformer, mods ...Modif
 func parse(input io.Reader, transformer Transformer) []interface{} {
 	requests := make([]interface{}, 0)
 	scanner := bufio.NewScanner(input)
+
 	for scanner.Scan() {
 		line := scanner.Text()
 		request, err := transformer(line)
+
 		if err != nil {
 			log.Errorf("Warning: Error parsing input line %q: %v\n", line, err)
 		} else {
 			requests = append(requests, request)
 		}
 	}
+
 	return requests
 }
 
 func open(filename string) (*os.File, error) {
 	if len(filename) == 0 {
 		log.Errorf("Reading input lines until EOF:\n")
+
 		return os.Stdin, nil
 	}
+
 	return os.Open(filename)
 }
 
@@ -82,6 +92,7 @@ func close(file io.Closer) {
 	if file == os.Stdin {
 		return
 	}
+
 	if err := file.Close(); err != nil {
 		log.Errorf("Warning: Error closing input file: %v\n", err)
 	}

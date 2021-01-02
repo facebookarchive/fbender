@@ -14,15 +14,14 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/pinterest/bender"
-
 	"github.com/facebookincubator/fbender/log"
+	"github.com/pinterest/bender"
 )
 
-// MaxResponseSize is the max response size for UDP test
+// MaxResponseSize is the max response size for UDP test.
 const MaxResponseSize = 2048
 
-// Datagram represents a udp datagram to be sent
+// Datagram represents a udp datagram to be sent.
 type Datagram struct {
 	Port int
 	Data []byte
@@ -34,6 +33,7 @@ type ResponseValidator func(request *Datagram, response []byte) error
 // CreateExecutor creates a new UDP RequestExecutor.
 func CreateExecutor(timeout time.Duration, validator ResponseValidator, hosts ...string) bender.RequestExecutor {
 	var i int
+
 	return func(_ int64, request interface{}) (interface{}, error) {
 		datagram, ok := request.(*Datagram)
 		if !ok {
@@ -48,6 +48,7 @@ func CreateExecutor(timeout time.Duration, validator ResponseValidator, hosts ..
 		if err != nil {
 			return nil, err
 		}
+
 		defer func() {
 			if err = conn.Close(); err != nil {
 				log.Errorf("Error closing connection: %v\n", err)
@@ -57,15 +58,18 @@ func CreateExecutor(timeout time.Duration, validator ResponseValidator, hosts ..
 		if err = conn.SetWriteDeadline(time.Now().Add(timeout)); err != nil {
 			return nil, err
 		}
+
 		_, err = conn.Write(datagram.Data)
 		if err != nil {
 			return nil, err
 		}
 
 		buffer := make([]byte, MaxResponseSize)
+
 		if err = conn.SetReadDeadline(time.Now().Add(timeout)); err != nil {
 			return nil, err
 		}
+
 		n, err := conn.Read(buffer)
 		if err != nil {
 			return nil, err
@@ -74,6 +78,7 @@ func CreateExecutor(timeout time.Duration, validator ResponseValidator, hosts ..
 		if err = validator(datagram, buffer[:n]); err != nil {
 			return nil, err
 		}
+
 		return buffer[:n], nil
 	}
 }

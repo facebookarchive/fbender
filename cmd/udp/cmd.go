@@ -12,6 +12,7 @@ import (
 	"github.com/facebookincubator/fbender/cmd/core"
 )
 
+//nolint:gochecknoglobals
 var template = &core.CommandTemplate{
 	Name:  "udp",
 	Short: "Test UDP",
@@ -28,5 +29,6 @@ Input format: "DstPort Base64EncodedeData"
   fbender udp {test} constraints -t $TARGET -g ^10 -c "MAX(errors)<10" 40`,
 }
 
-// Command is the UDP subcommand
+// Command is the UDP subcommand.
+//nolint:gochecknoglobals
 var Command = core.NewTestCommand(template, params)

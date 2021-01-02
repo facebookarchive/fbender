@@ -12,10 +12,9 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/facebookincubator/fbender/recorders"
 	"github.com/pinterest/bender"
 	"github.com/stretchr/testify/suite"
-
-	"github.com/facebookincubator/fbender/recorders"
 )
 
 type StatisticsRecorderTestSuite struct {

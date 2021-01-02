@@ -21,8 +21,10 @@ func checkConstraints(start time.Time, duration time.Duration, constraints ...*t
 	for _, constraint := range constraints {
 		if err := constraint.Check(start, duration); err != nil {
 			log.Errorf("Error checking %q: %v\n", constraint.String(), err)
+
 			return false
 		}
 	}
+
 	return true
 }
