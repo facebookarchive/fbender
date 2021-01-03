@@ -15,8 +15,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// assertPointerEqual checks whether two pointers are equal
+// assertPointerEqual checks whether two pointers are equal.
 func assertPointerEqual(t *testing.T, value, expected interface{}, args ...interface{}) {
+	t.Helper()
+
 	valuePointer := reflect.ValueOf(value).Pointer()
 	expectedPointer := reflect.ValueOf(expected).Pointer()
 	assert.Equal(t, valuePointer, expectedPointer, args...)

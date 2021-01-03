@@ -11,9 +11,8 @@ package utils_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/facebookincubator/fbender/utils"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestWithDefaultPort(t *testing.T) {

@@ -13,10 +13,9 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/facebookincubator/fbender/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-
-	"github.com/facebookincubator/fbender/log"
 )
 
 var ErrDummy = errors.New("dummy error")
@@ -27,6 +26,7 @@ type MockedWriter struct {
 
 func (m *MockedWriter) Write(p []byte) (int, error) {
 	args := m.Called(p)
+
 	return args.Int(0), args.Error(1)
 }
 

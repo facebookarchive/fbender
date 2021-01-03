@@ -1,6 +1,5 @@
 run:
   deadline: 5m
-  tests: false
 
 linters-settings:
   dupl:
@@ -22,6 +21,7 @@ linters:
     - prealloc
     - dupl
     - gomnd
-    - wrapcheck
     - exhaustivestruct
+    - wrapcheck
     - goerr113
+    - paralleltest

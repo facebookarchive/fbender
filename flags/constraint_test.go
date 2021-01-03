@@ -13,13 +13,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/facebookincubator/fbender/flags"
+	"github.com/facebookincubator/fbender/tester"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-
-	"github.com/facebookincubator/fbender/flags"
-	"github.com/facebookincubator/fbender/tester"
 )
 
 type MockedMetric struct {
@@ -28,16 +27,19 @@ type MockedMetric struct {
 
 func (m *MockedMetric) Setup(options interface{}) error {
 	args := m.Called(options)
+
 	return args.Error(0)
 }
 
 func (m *MockedMetric) Fetch(start time.Time, duration time.Duration) ([]tester.DataPoint, error) {
 	args := m.Called(start, duration)
+
 	return args.Get(0).([]tester.DataPoint), args.Error(1)
 }
 
 func (m *MockedMetric) Name() string {
 	args := m.Called()
+
 	return args.String(0)
 }
 
@@ -49,9 +51,11 @@ func (m *MockedMetricParsers) ParserA(name string) (tester.Metric, error) {
 	args := m.Called(name)
 	constraint := args.Get(0)
 	err := args.Error(1)
+
 	if constraint, ok := constraint.(tester.Metric); ok {
 		return constraint, err
 	}
+
 	return nil, err
 }
 
@@ -59,9 +63,11 @@ func (m *MockedMetricParsers) ParserB(name string) (tester.Metric, error) {
 	args := m.Called(name)
 	constraint := args.Get(0)
 	err := args.Error(1)
+
 	if constraint, ok := constraint.(tester.Metric); ok {
 		return constraint, err
 	}
+
 	return nil, err
 }
 
@@ -69,9 +75,11 @@ func (m *MockedMetricParsers) ParserC(name string) (tester.Metric, error) {
 	args := m.Called(name)
 	constraint := args.Get(0)
 	err := args.Error(1)
+
 	if constraint, ok := constraint.(tester.Metric); ok {
 		return constraint, err
 	}
+
 	return nil, err
 }
 
@@ -91,6 +99,7 @@ func (s *ConstraintsSliceValueTestSuite) SetupTest() {
 
 	s.ms = make([]*MockedMetric, 3)
 	s.cs = make([]*tester.Constraint, 3)
+
 	for i := 0; i < 3; i++ {
 		s.ms[i] = new(MockedMetric)
 		s.cs[i] = &tester.Constraint{
@@ -151,6 +160,7 @@ func (s *ConstraintsSliceValueTestSuite) TestSet_ParsersCalledForEveryValue() {
 
 func (s *ConstraintsSliceValueTestSuite) TestSet_ErrorsOnError() {
 	errFatal := errors.New("fatal error on parser B")
+
 	s.parsers.On("ParserA", "metric_0").Return(nil, tester.ErrNotParsed).Once()
 	s.parsers.On("ParserB", "metric_0").Return(nil, errFatal).Once()
 
