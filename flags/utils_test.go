@@ -11,9 +11,8 @@ package flags_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/facebookincubator/fbender/flags"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestChoicesString(t *testing.T) {

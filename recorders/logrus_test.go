@@ -12,12 +12,11 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/facebookincubator/fbender/recorders"
 	"github.com/pinterest/bender"
 	"github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/suite"
-
-	"github.com/facebookincubator/fbender/recorders"
 )
 
 type LogrusRecorderTestSuite struct {

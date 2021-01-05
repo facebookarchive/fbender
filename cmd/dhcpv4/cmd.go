@@ -12,6 +12,7 @@ import (
 	"github.com/facebookincubator/fbender/cmd/core"
 )
 
+//nolint:gochecknoglobals
 var template = &core.CommandTemplate{
 	Name:  "dhcpv4",
 	Short: "Test DHCPv4",
@@ -29,9 +30,11 @@ Input format: "DeviceMAC"
   fbender dhcpv4 {test} constraints -t $TARGET -g ^10 -c "MAX(errors)<10" 40`,
 }
 
-// Command is the DHCPv4 subcommand
+// Command is the DHCPv4 subcommand.
+//nolint:gochecknoglobals
 var Command = core.NewTestCommand(template, params)
 
+//nolint:gochecknoinits
 func init() {
 	optionCodes := NewOptionCodeSliceValue()
 	Command.PersistentFlags().VarP(optionCodes, "oro", "r", "dhcpv4 parameter request list")

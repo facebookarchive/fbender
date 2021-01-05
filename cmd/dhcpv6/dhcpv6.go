@@ -11,14 +11,13 @@ package dhcpv6
 import (
 	"net"
 
-	"github.com/insomniacslk/dhcp/dhcpv6"
-	"github.com/spf13/cobra"
-
 	"github.com/facebookincubator/fbender/cmd/core/input"
 	"github.com/facebookincubator/fbender/cmd/core/options"
 	"github.com/facebookincubator/fbender/cmd/core/runner"
 	tester "github.com/facebookincubator/fbender/tester/dhcpv6"
 	"github.com/facebookincubator/fbender/utils"
+	"github.com/insomniacslk/dhcp/dhcpv6"
+	"github.com/spf13/cobra"
 )
 
 func params(cmd *cobra.Command, o *options.Options) (*runner.Params, error) {
@@ -26,15 +25,18 @@ func params(cmd *cobra.Command, o *options.Options) (*runner.Params, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	r, err := input.NewRequestGenerator(o.Input, inputTransformer(optionCodes))
 	if err != nil {
 		return nil, err
 	}
+
 	t := &tester.Tester{
 		Target:     utils.WithDefaultPort(o.Target, dhcpv6.DefaultServerPort),
 		Timeout:    o.Timeout,
 		BufferSize: o.BufferSize,
 	}
+
 	return &runner.Params{Tester: t, RequestGenerator: r}, nil
 }
 
@@ -44,6 +46,7 @@ func inputTransformer(optionCodes []dhcpv6.OptionCode) input.Transformer {
 		if err != nil {
 			return nil, err
 		}
+
 		return dhcpv6.NewSolicit(mac, dhcpv6.WithRequestedOptions(optionCodes...))
 	}
 }

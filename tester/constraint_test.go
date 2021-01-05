@@ -15,11 +15,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
-
 	"github.com/facebookincubator/fbender/metric"
 	"github.com/facebookincubator/fbender/tester"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 )
 
 type MockedMetric struct {
@@ -28,16 +27,19 @@ type MockedMetric struct {
 
 func (m *MockedMetric) Setup(options interface{}) error {
 	args := m.Called(options)
+
 	return args.Error(0)
 }
 
 func (m *MockedMetric) Fetch(start time.Time, duration time.Duration) ([]tester.DataPoint, error) {
 	args := m.Called(start, duration)
+
 	return args.Get(0).([]tester.DataPoint), args.Error(1)
 }
 
 func (m *MockedMetric) Name() string {
 	args := m.Called()
+
 	return args.String(0)
 }
 
@@ -55,6 +57,7 @@ func (s *ParseConstraintTestSuite) SetupTest() {
 	}
 }
 
+//nolint:funlen
 func (s *ParseConstraintTestSuite) TestConstructor() {
 	// Fork bomb is not a valid constraint.
 	c, err := tester.ParseConstraint("💣(){ 💣|💣& };💣", s.parsers...)
@@ -117,7 +120,7 @@ func (s *ParseConstraintTestSuite) TestConstructor() {
 	c, err = tester.ParseConstraint(
 		fmt.Sprintf(
 			"MAX(latency) < %s",
-			strings.Replace(number, "\n", "", -1),
+			strings.ReplaceAll(number, "\n", ""),
 		),
 		s.parsers...,
 	)
@@ -131,15 +134,19 @@ func (s *ParseConstraintTestSuite) TestCheck() {
 	// No datapoints should result in error.
 	s.metric.On("Fetch", now, time.Second).
 		Return([]tester.DataPoint(nil), nil).Once()
+
 	c := &tester.Constraint{Metric: s.metric}
 	err := c.Check(now, time.Second)
+
 	s.Assert().Error(err)
 	s.metric.AssertExpectations(s.T())
 	// If metric.Fetch returned error, Check should result in error.
 	s.metric.On("Fetch", now, time.Second).
 		Return([]tester.DataPoint(nil), errors.New("error")).Once()
+
 	c = &tester.Constraint{Metric: s.metric}
 	err = c.Check(now, time.Second)
+
 	s.Assert().Error(err)
 	s.metric.AssertExpectations(s.T())
 	// Should pass - (10 < 10 + 1).
@@ -148,6 +155,7 @@ func (s *ParseConstraintTestSuite) TestCheck() {
 			[]tester.DataPoint{{Value: 10}},
 			nil,
 		).Once()
+
 	c = &tester.Constraint{
 		Metric:     s.metric,
 		Aggregator: tester.MinimumAggregator,
@@ -155,6 +163,7 @@ func (s *ParseConstraintTestSuite) TestCheck() {
 		Threshold:  10 + 1,
 	}
 	err = c.Check(now, time.Second)
+
 	s.Assert().NoError(err)
 	s.metric.AssertExpectations(s.T())
 	// Should not pass - (10 > 10 + 1).
@@ -164,6 +173,7 @@ func (s *ParseConstraintTestSuite) TestCheck() {
 				{Value: 10},
 			},
 			nil).Once()
+
 	c = &tester.Constraint{
 		Metric:     s.metric,
 		Aggregator: tester.MinimumAggregator,
@@ -171,6 +181,7 @@ func (s *ParseConstraintTestSuite) TestCheck() {
 		Threshold:  10 + 1,
 	}
 	err = c.Check(now, time.Second)
+
 	s.Assert().Error(err)
 	s.metric.AssertExpectations(s.T())
 }

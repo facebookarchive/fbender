@@ -34,8 +34,10 @@ func readAsCSV(val string) ([]string, error) {
 	if val == "" {
 		return []string{}, nil
 	}
+
 	stringReader := strings.NewReader(val)
 	csvReader := csv.NewReader(stringReader)
+
 	return csvReader.Read()
 }
 
@@ -44,26 +46,35 @@ func (s *optionCodeSliceValue) Set(value string) error {
 	if err != nil {
 		return err
 	}
+
 	var buf []byte
+
 	var optcodes dhcpv4.OptionCodeList
+
 	for _, v := range values {
 		var optcode uint64
+
 		optcode, err = strconv.ParseUint(v, 10, 8)
 		if err != nil {
 			return err
 		}
+
 		buf = append(buf, byte(optcode))
 	}
+
 	err = optcodes.FromBytes(buf)
 	if err != nil {
 		return err
 	}
+
 	if !s.changed {
 		s.value = optcodes
 	} else {
 		s.value.Add(optcodes...)
 	}
+
 	s.changed = true
+
 	return nil
 }
 
@@ -75,19 +86,21 @@ func (s *optionCodeSliceValue) String() string {
 	return s.value.String()
 }
 
-// GetOptionCodes returns an option code slice from a pflag set
+// GetOptionCodes returns an option code slice from a pflag set.
 func GetOptionCodes(f *pflag.FlagSet, name string) (dhcpv4.OptionCodeList, error) {
 	flag := f.Lookup(name)
 	if flag == nil {
 		return nil, fmt.Errorf("flag %s accessed but not defined", name)
 	}
+
 	return GetOptionCodesValue(flag.Value)
 }
 
-// GetOptionCodesValue returns an option code slice from a pflag value
+// GetOptionCodesValue returns an option code slice from a pflag value.
 func GetOptionCodesValue(v pflag.Value) (dhcpv4.OptionCodeList, error) {
 	if optcodes, ok := v.(*optionCodeSliceValue); ok {
 		return optcodes.value, nil
 	}
+
 	return nil, fmt.Errorf("trying to get option codes value of flag of type %s", v.Type())
 }

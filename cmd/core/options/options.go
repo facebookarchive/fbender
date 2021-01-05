@@ -11,12 +11,11 @@ package options
 import (
 	"time"
 
-	"github.com/pinterest/bender"
-
 	"github.com/facebookincubator/fbender/tester"
+	"github.com/pinterest/bender"
 )
 
-// Options represents common options for the Commands
+// Options represents common options for the Commands.
 type Options struct {
 	Target   string
 	Duration time.Duration
@@ -37,7 +36,7 @@ type Options struct {
 	Recorders []bender.Recorder
 }
 
-// NewOptions returns new options
+// NewOptions returns new options.
 func NewOptions() *Options {
 	return &Options{
 		Tests:       []int{},
@@ -46,12 +45,12 @@ func NewOptions() *Options {
 	}
 }
 
-// GetUnit returns a unit used in tests
+// GetUnit returns a unit used in tests.
 func (o *Options) GetUnit() time.Duration {
 	return o.Unit
 }
 
-// AddRecorder adds a recorder to options
+// AddRecorder adds a recorder to options.
 func (o *Options) AddRecorder(recorder bender.Recorder) {
 	o.Recorders = append(o.Recorders, recorder)
 }

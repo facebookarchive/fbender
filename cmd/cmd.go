@@ -13,9 +13,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
-
 	"github.com/facebookincubator/fbender/cmd/core"
 	"github.com/facebookincubator/fbender/cmd/dhcpv4"
 	"github.com/facebookincubator/fbender/cmd/dhcpv6"
@@ -24,9 +21,12 @@ import (
 	"github.com/facebookincubator/fbender/cmd/tftp"
 	"github.com/facebookincubator/fbender/cmd/udp"
 	"github.com/facebookincubator/fbender/flags"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
-// Subcommands are the protocol subcommands
+// Subcommands are the protocol subcommands.
+//nolint:gochecknoglobals
 var Subcommands = []*cobra.Command{
 	dhcpv4.Command,
 	dhcpv6.Command,
@@ -36,7 +36,8 @@ var Subcommands = []*cobra.Command{
 	udp.Command,
 }
 
-// Command is the root command for the CLI
+// Command is the root command for the CLI.
+//nolint:gochecknoglobals
 var Command = &cobra.Command{
 	Use: "fbender",
 	Long: `FBender is a load tester tool for various protocols. It provides two different
@@ -81,26 +82,36 @@ other output. Available levels (both numbers and literals are accepted):
 func initIOFlags() {
 	// Input
 	Command.PersistentFlags().StringP("input", "i", "", "load test input data from a file (default <stdin>)")
+
 	if err := Command.MarkPersistentFlagFilename("input"); err != nil {
 		panic(err)
 	}
+
 	// Output
 	logOutput := flags.NewLogOutput(logrus.StandardLogger())
+
 	Command.PersistentFlags().VarP(logOutput, "output", "o", "log test output to a file")
+
 	if err := Command.MarkPersistentFlagFilename("output"); err != nil {
 		panic(err)
 	}
+
 	// Log Level
 	logLevel := &flags.LogLevel{Logger: logrus.StandardLogger()}
 	logLevelChoices := flags.ChoicesString(flags.LogLevelChoices())
+
 	Command.PersistentFlags().VarP(logLevel, "verbosity", "v", fmt.Sprintf("verbosity level %s", logLevelChoices))
+
 	if err := flags.BashCompletionLogLevel(Command, Command.PersistentFlags(), "verbosity"); err != nil {
 		panic(err)
 	}
+
 	// Log format
 	logFormat := &flags.LogFormat{Logger: logrus.StandardLogger(), Format: "json"}
 	logFormatChoices := flags.ChoicesString(flags.LogFormatChoices())
+
 	Command.PersistentFlags().VarP(logFormat, "format", "f", fmt.Sprintf("output format %s", logFormatChoices))
+
 	if err := flags.BashCompletionLogFormat(Command, Command.PersistentFlags(), "format"); err != nil {
 		panic(err)
 	}
@@ -109,13 +120,17 @@ func initIOFlags() {
 func initExecutionFlags() {
 	// Test duration
 	Command.PersistentFlags().DurationP("duration", "d", 1*time.Minute, "single test duration")
+
 	// Requests distribution
 	distribution := flags.NewDefaultDistribution()
 	distributionChoices := flags.ChoicesString(flags.DistributionChoices())
+
 	Command.PersistentFlags().VarP(distribution, "dist", "D", fmt.Sprintf("requests distribution %s", distributionChoices))
+
 	if err := flags.BashCompletionDistribution(Command, Command.PersistentFlags(), "dist"); err != nil {
 		panic(err)
 	}
+
 	// Other settings
 	Command.PersistentFlags().IntP("buffer", "b", 2048, "buffer size of the requests generator channel")
 	Command.PersistentFlags().DurationP("timeout", "w", 1*time.Second, "wait timeout on requests")
@@ -123,22 +138,27 @@ func initExecutionFlags() {
 	Command.PersistentFlags().Bool("nostats", false, "disable statistics")
 }
 
+//nolint:gochecknoinits
 func init() {
 	cobra.EnablePrefixMatching = true
+
 	initIOFlags()
 	initExecutionFlags()
+
 	for _, subcommand := range Subcommands {
 		Command.AddCommand(subcommand)
 		subcommand.PersistentFlags().StringP("target", "t", "", "endpoint to load test")
+
 		if err := subcommand.MarkPersistentFlagRequired("target"); err != nil {
 			panic(err)
 		}
 	}
+
 	Command.AddCommand(completionCmd)
 	core.StartPostInit()
 }
 
-// Execute runs the Command
+// Execute runs the Command.
 func Execute() {
 	if err := Command.Execute(); err != nil {
 		os.Exit(1)

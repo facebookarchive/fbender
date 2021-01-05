@@ -13,14 +13,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/facebookincubator/fbender/tester"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLessThan__Compare(t *testing.T) {
 	s := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(s)
+
 	for i := 0; i < 4096; i++ {
 		x, y := r.Float64(), r.Float64()
 		assert.Equal(t, x < y, tester.LessThan.Compare(x, y), "%f < %f", x, y)
@@ -40,6 +40,7 @@ func TestParseComparator_LessThan(t *testing.T) {
 func TestGreaterThan__Compare(t *testing.T) {
 	s := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(s)
+
 	for i := 0; i < 4096; i++ {
 		x, y := r.Float64(), r.Float64()
 		assert.Equal(t, x > y, tester.GreaterThan.Compare(x, y), "%f > %f", x, y)

@@ -37,13 +37,16 @@ func (c *Constraint) Check(start time.Time, duration time.Duration) error {
 	if err != nil {
 		return err
 	}
+
 	if points == nil {
 		return errors.New("no data points")
 	}
+
 	value := c.Aggregator.Aggregate(points)
 	if !c.Comparator.Compare(value, c.Threshold) {
 		return fmt.Errorf("unsatisfied %.4f %s %.4f", value, c.Comparator.Name(), c.Threshold)
 	}
+
 	return nil
 }
 
@@ -63,10 +66,8 @@ Constraints examples:
 
 ` + GrowthHelp
 
-var (
-	// ErrNotParsed should be returned when a parser did not parse a constraint.
-	ErrNotParsed = errors.New("constraint could not be parsed")
-)
+// ErrNotParsed should be returned when a parser did not parse a constraint.
+var ErrNotParsed = errors.New("constraint could not be parsed")
 
 // MetricParser is used to parse string values to a metric.
 // Parsers should return a metric and error if it successfully parsed
@@ -82,6 +83,7 @@ const (
 	thresholdMatch  = `(?P<threshold>[-+]?\d*\.?\d+)`
 )
 
+//nolint:gochecknoglobals
 var constraintRegexp = utils.MustCompile(
 	fmt.Sprintf(
 		`^\s*%s\(%s\)\s*%s\s*%s\s*$`,
@@ -94,23 +96,29 @@ func ParseConstraint(s string, parsers ...MetricParser) (*Constraint, error) {
 	if !constraintRegexp.MatchString(s) {
 		return nil, errors.New("invalid constraint format")
 	}
+
 	match := constraintRegexp.FindStringSubmatchMap(s)
+
 	aggregator, err := ParseAggregator(match["aggregator"])
 	if err != nil {
 		return nil, err
 	}
+
 	metric, err := parseMetric(match["metric"], parsers...)
 	if err != nil {
 		return nil, err
 	}
+
 	comparator, err := ParseComparator(match["comparator"])
 	if err != nil {
 		return nil, err
 	}
+
 	threshold, err := strconv.ParseFloat(match["threshold"], 64)
 	if err != nil {
 		return nil, err
 	}
+
 	return &Constraint{
 		Metric:     metric,
 		Aggregator: aggregator,
@@ -124,9 +132,10 @@ func parseMetric(name string, parsers ...MetricParser) (Metric, error) {
 		metric, err := parser(name)
 		if err == nil {
 			return metric, nil
-		} else if err != ErrNotParsed {
+		} else if !errors.Is(err, ErrNotParsed) {
 			return nil, err
 		}
 	}
+
 	return nil, ErrNotParsed
 }

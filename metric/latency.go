@@ -12,29 +12,29 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pinterest/bender"
-
 	"github.com/facebookincubator/fbender/tester"
+	"github.com/pinterest/bender"
 )
 
-// LatencyMetric fetches data from statistics
+// LatencyMetric fetches data from statistics.
 type LatencyMetric struct {
 	mutex  sync.Mutex
 	points []tester.DataPoint
 }
 
-// LatencyMetricOptions represents errors metric options
+// LatencyMetricOptions represents errors metric options.
 type LatencyMetricOptions interface {
 	AddRecorder(bender.Recorder)
 	GetUnit() time.Duration
 }
 
-// Setup prepares errors metric
+// Setup prepares errors metric.
 func (m *LatencyMetric) Setup(options interface{}) error {
 	opts, ok := options.(LatencyMetricOptions)
 	if !ok {
 		return tester.ErrInvalidOptions
 	}
+
 	unit := opts.GetUnit()
 	opts.AddRecorder(func(msg interface{}) {
 		switch msg := msg.(type) {
@@ -49,15 +49,16 @@ func (m *LatencyMetric) Setup(options interface{}) error {
 			m.mutex.Unlock()
 		}
 	})
+
 	return nil
 }
 
-// Fetch calculates the errors percentage for the statistics
+// Fetch calculates the errors percentage for the statistics.
 func (m *LatencyMetric) Fetch(start time.Time, duration time.Duration) ([]tester.DataPoint, error) {
 	return m.points, nil
 }
 
-// Name returns the name of the errors statistic
+// Name returns the name of the errors statistic.
 func (m *LatencyMetric) Name() string {
 	return "latency"
 }

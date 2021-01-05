@@ -11,11 +11,10 @@ package dhcpv6_test
 import (
 	"testing"
 
+	flags "github.com/facebookincubator/fbender/cmd/dhcpv6"
 	"github.com/insomniacslk/dhcp/dhcpv6"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/suite"
-
-	flags "github.com/facebookincubator/fbender/cmd/dhcpv6"
 )
 
 type OptionCodeSliceValueTestSuite struct {
@@ -31,23 +30,29 @@ func (s *OptionCodeSliceValueTestSuite) SetupTest() {
 func (s *OptionCodeSliceValueTestSuite) TestSet_NoErrors() {
 	err := s.value.Set("1,2")
 	s.Require().NoError(err)
+
 	v, err := flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
+
 	o := []dhcpv6.OptionCode{dhcpv6.OptionClientID, dhcpv6.OptionServerID}
 	s.Assert().Equal(o, v)
 
 	// Check if consecutive calls append values
 	err = s.value.Set("3")
 	s.Require().NoError(err)
+
 	v, err = flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
+
 	o = append(o, dhcpv6.OptionIANA)
 	s.Assert().Equal(o, v)
 
 	err = s.value.Set("4,5")
 	s.Require().NoError(err)
+
 	v, err = flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
+
 	o = append(o, dhcpv6.OptionIATA, dhcpv6.OptionIAAddr)
 	s.Assert().Equal(o, v)
 }
@@ -56,6 +61,7 @@ func (s *OptionCodeSliceValueTestSuite) TestSet_Errors() {
 	// Errors - single value
 	err := s.value.Set("notanumber")
 	s.Assert().EqualError(err, "strconv.ParseUint: parsing \"notanumber\": invalid syntax")
+
 	v, err := flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().Empty(v)

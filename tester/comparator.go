@@ -12,7 +12,7 @@ import (
 	"errors"
 )
 
-// Comparator allows to compare given values
+// Comparator allows to compare given values.
 type Comparator interface {
 	Compare(x, y float64) bool
 	Name() string
@@ -31,25 +31,28 @@ func (c *comparator) Name() string {
 	return c.repr
 }
 
-// Available comparators
+// Available comparators.
+//nolint:gochecknoglobals
 var (
 	LessThan    Comparator = &comparator{repr: "<", cmp: func(x, y float64) bool { return x < y }}
 	GreaterThan            = &comparator{repr: ">", cmp: func(x, y float64) bool { return x > y }}
 )
 
-// Comparators is a map of comparators representation to the actual comparator
+// Comparators is a map of comparators representation to the actual comparator.
+//nolint:gochecknoglobals
 var Comparators = map[string]Comparator{
 	LessThan.Name():    LessThan,
 	GreaterThan.Name(): GreaterThan,
 }
 
-// ErrInvalidComparator is returned when a comparator cannot be found
+// ErrInvalidComparator is returned when a comparator cannot be found.
 var ErrInvalidComparator = errors.New("invalid comparator")
 
-// ParseComparator returns a comparator based on the given string
+// ParseComparator returns a comparator based on the given string.
 func ParseComparator(name string) (Comparator, error) {
 	if cmp, ok := Comparators[name]; ok {
 		return cmp, nil
 	}
+
 	return nil, ErrInvalidComparator
 }

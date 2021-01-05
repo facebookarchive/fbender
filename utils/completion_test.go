@@ -12,11 +12,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/facebookincubator/fbender/utils"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/facebookincubator/fbender/utils"
 )
 
 func TestBashCompletion(t *testing.T) {

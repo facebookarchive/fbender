@@ -18,5 +18,6 @@ func WithDefaultPort(hostport string, port int) string {
 	if _, _, err := net.SplitHostPort(hostport); err != nil {
 		return net.JoinHostPort(hostport, strconv.Itoa(port))
 	}
+
 	return hostport
 }

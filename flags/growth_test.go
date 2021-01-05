@@ -11,12 +11,11 @@ package flags_test
 import (
 	"testing"
 
+	"github.com/facebookincubator/fbender/flags"
+	"github.com/facebookincubator/fbender/tester"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/facebookincubator/fbender/flags"
-	"github.com/facebookincubator/fbender/tester"
 )
 
 func TestGrowth__String(t *testing.T) {

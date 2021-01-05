@@ -12,6 +12,7 @@ import (
 	"github.com/facebookincubator/fbender/cmd/core"
 )
 
+//nolint:gochecknoglobals
 var template = &core.CommandTemplate{
 	Name:  "tftp",
 	Short: "Test TFTP",
@@ -31,9 +32,11 @@ Input format: "Filename octet" or "Filename netascii"
   fbender tftp {test} constraints -t $TARGET -g ^10 -c "MAX(errors)<10" 40`,
 }
 
-// Command is the TFTP subcommand
+// Command is the TFTP subcommand.
+//nolint:gochecknoglobals
 var Command = core.NewTestCommand(template, params)
 
+//nolint:gochecknoinits
 func init() {
 	Command.PersistentFlags().IntP("blocksize", "s", 512, "blocksize option as in RFC2348")
 }

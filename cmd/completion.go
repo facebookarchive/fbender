@@ -14,11 +14,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+//nolint:gochecknoglobals
 var completionCmd = &cobra.Command{
 	Use:   "completion",
 	Short: "Generates completion scripts",
 }
 
+//nolint:gochecknoglobals
 var bashCompletionCmd = &cobra.Command{
 	Use:   "bash",
 	Short: "Generates bash completion scripts",
@@ -36,6 +38,7 @@ To configure your bash shell to load completions for each session add to .bashrc
 	},
 }
 
+//nolint:gochecknoinits
 func init() {
 	completionCmd.AddCommand(bashCompletionCmd)
 }

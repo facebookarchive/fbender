@@ -17,18 +17,19 @@ import (
 func NewLogrusRecorder(l *logrus.Logger, defaults ...logrus.Fields) bender.Recorder {
 	return func(msg interface{}) {
 		log := logrus.NewEntry(l)
+
 		for _, fields := range defaults {
 			for key, value := range fields {
 				log = log.WithField(key, value)
 			}
 		}
+
 		switch msg := msg.(type) {
 		case *bender.StartRequestEvent:
 			logStartRequestEvent(log, msg)
 		case *bender.EndRequestEvent:
 			logEndRequestEvent(log, msg)
 		}
-		// Ignore other events
 	}
 }
 
@@ -46,6 +47,7 @@ func logEndRequestEvent(log *logrus.Entry, msg *bender.EndRequestEvent) {
 		"elapsed":  int(msg.End - msg.Start),
 		"response": msg.Response,
 	})
+
 	if msg.Err != nil {
 		log.WithError(msg.Err).Warn("Fail")
 	} else {

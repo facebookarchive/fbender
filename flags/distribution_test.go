@@ -11,13 +11,12 @@ package flags_test
 import (
 	"testing"
 
+	"github.com/facebookincubator/fbender/flags"
 	"github.com/pinterest/bender"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/facebookincubator/fbender/flags"
 )
 
 func TestNewDefaultDistribution(t *testing.T) {

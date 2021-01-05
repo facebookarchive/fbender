@@ -12,7 +12,7 @@ import (
 	"github.com/facebookincubator/fbender/tester"
 )
 
-// Help is a help message on available metrics
+// Help is a help message on available metrics.
 const Help = `
 Basic Metrics:
 * errors - errors percentage of all requests, ignores aggregator
@@ -21,7 +21,7 @@ Basic Metrics:
   MIN(errors) < 42.0
   AVG(latency) < 30`
 
-// Parser is a parser for standard metrics
+// Parser is a parser for standard metrics.
 func Parser(value string) (tester.Metric, error) {
 	switch value {
 	case "errors":

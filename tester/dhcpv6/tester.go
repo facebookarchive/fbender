@@ -18,7 +18,7 @@ import (
 	protocol "github.com/pinterest/bender/dhcpv6"
 )
 
-// Tester is a load tester for DHCPv6
+// Tester is a load tester for DHCPv6.
 type Tester struct {
 	Target     string
 	Timeout    time.Duration
@@ -26,16 +26,18 @@ type Tester struct {
 	client     *async.Client
 }
 
-// Before is called before the first test
+// Before is called before the first test.
 func (t *Tester) Before(options interface{}) error {
 	target, err := net.ResolveUDPAddr("udp6", t.Target)
 	if err != nil {
 		return err
 	}
+
 	ip, err := dhcpv6.GetGlobalAddr("eth0")
 	if err != nil {
 		return err
 	}
+
 	t.client = &async.Client{
 		ReadTimeout:  t.Timeout,
 		WriteTimeout: t.Timeout,
@@ -43,18 +45,19 @@ func (t *Tester) Before(options interface{}) error {
 		RemoteAddr:   target,
 		IgnoreErrors: true,
 	}
+
 	return nil
 }
 
-// After is called after all tests are finished
+// After is called after all tests are finished.
 func (t *Tester) After(_ interface{}) {}
 
-// BeforeEach is called before every test
+// BeforeEach is called before every test.
 func (t *Tester) BeforeEach(options interface{}) error {
 	return t.client.Open(t.BufferSize)
 }
 
-// AfterEach is called after every test
+// AfterEach is called after every test.
 func (t *Tester) AfterEach(_ interface{}) {
 	t.client.Close()
 }
@@ -63,7 +66,7 @@ func validator(req, res dhcpv6.DHCPv6) error {
 	return nil
 }
 
-// RequestExecutor returns a request executor
+// RequestExecutor returns a request executor.
 func (t *Tester) RequestExecutor(_ interface{}) (bender.RequestExecutor, error) {
 	return protocol.CreateExecutor(t.client, validator), nil
 }

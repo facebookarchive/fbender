@@ -11,17 +11,17 @@ package run
 import (
 	"time"
 
-	"github.com/pinterest/bender"
-
 	"github.com/facebookincubator/fbender/tester"
+	"github.com/pinterest/bender"
 )
 
-// LoadTestConcurrencyFixed runs predefined set of throughput tests
+// LoadTestConcurrencyFixed runs predefined set of throughput tests.
 func LoadTestConcurrencyFixed(r tester.ConcurrencyRunner, o interface{}, ws ...tester.Workers) error {
 	t := r.Tester()
 	if err := t.Before(o); err != nil {
 		return err
 	}
+
 	defer t.After(o)
 
 	for _, workers := range ws {
@@ -29,32 +29,37 @@ func LoadTestConcurrencyFixed(r tester.ConcurrencyRunner, o interface{}, ws ...t
 			return err
 		}
 	}
+
 	return nil
 }
 
-// LoadTestConcurrencyConstraints automatically tries to find a breakpoint based on provided constraints checks
+// LoadTestConcurrencyConstraints automatically tries to find a breakpoint based on provided constraints checks.
 func LoadTestConcurrencyConstraints(r tester.ConcurrencyRunner, o interface{}, start tester.Workers, g tester.Growth,
 	cs ...*tester.Constraint) error {
-
 	t := r.Tester()
 	if err := t.Before(o); err != nil {
 		return err
 	}
+
 	defer t.After(o)
 
 	workers := start
 	for workers > 0 {
 		startTime := time.Now()
+
 		if err := loadTestConcurrency(r, t, o, workers); err != nil {
 			return err
 		}
+
 		duration := time.Since(startTime)
+
 		if checkConstraints(startTime, duration, cs...) {
 			workers = g.OnSuccess(workers)
 		} else {
 			workers = g.OnFail(workers)
 		}
 	}
+
 	return nil
 }
 
@@ -74,7 +79,9 @@ func loadTestConcurrency(r tester.ConcurrencyRunner, t tester.Tester, o interfac
 	if err != nil {
 		return err
 	}
+
 	bender.LoadTestConcurrency(r.WorkerSemaphore(), r.Requests(), executor, r.Recorder())
 	bender.Record(r.Recorder(), r.Recorders()...)
+
 	return nil
 }

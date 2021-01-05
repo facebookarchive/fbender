@@ -12,6 +12,7 @@ import (
 	"github.com/facebookincubator/fbender/cmd/core"
 )
 
+//nolint:gochecknoglobals
 var template = &core.CommandTemplate{
 	Name:  "http",
 	Short: "Test HTTP",
@@ -29,9 +30,11 @@ Input format: "GET RelativeURL" or "POST RelativeURL FormData"
   fbender http {test} constraints -t $TARGET -g ^10 -c "MAX(errors)<10" 40`,
 }
 
-// Command is the HTTP subcommand
+// Command is the HTTP subcommand.
+//nolint:gochecknoglobals
 var Command = core.NewTestCommand(template, params)
 
+//nolint:gochecknoinits
 func init() {
 	Command.PersistentFlags().BoolP("ssl", "s", false, "enable ssl (use HTTPS)")
 }

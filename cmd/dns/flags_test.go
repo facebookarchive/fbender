@@ -12,11 +12,10 @@ import (
 	"strings"
 	"testing"
 
+	flags "github.com/facebookincubator/fbender/cmd/dns"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/suite"
-
-	flags "github.com/facebookincubator/fbender/cmd/dns"
 )
 
 type ProtocolValueTestSuite struct {
@@ -32,12 +31,14 @@ func (s *ProtocolValueTestSuite) SetupTest() {
 func (s *ProtocolValueTestSuite) TestSet_NoErrors() {
 	err := s.value.Set("udp")
 	s.Require().NoError(err)
+
 	v, err := flags.GetProtocolValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().Equal("udp", v)
 
 	err = s.value.Set("tcp")
 	s.Require().NoError(err)
+
 	v, err = flags.GetProtocolValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().Equal("tcp", v)
@@ -47,9 +48,11 @@ func (s *ProtocolValueTestSuite) TestSet_Errors() {
 	// Save original flag value
 	o, err := flags.GetProtocolValue(s.value)
 	s.Require().NoError(err)
+
 	// Try invalid value
 	err = s.value.Set("unknown")
 	s.Assert().EqualError(err, "unknown protocol \"unknown\", want: \"udp\" or \"tcp\"")
+
 	// The value shouldn't change
 	v, err := flags.GetProtocolValue(s.value)
 	s.Require().NoError(err)
@@ -92,8 +95,10 @@ func (s *ProtocolValueTestSuite) TestGetProtocolValue() {
 	// Check error when value is of different type
 	f := pflag.NewFlagSet("Test FlagSet", pflag.ExitOnError)
 	f.Int("myint", 0, "set myint")
+
 	flag := f.Lookup("myint")
 	s.Require().NotNil(flag)
+
 	_, err = flags.GetProtocolValue(flag.Value)
 	s.Assert().EqualError(err, "trying to get protocol value of flag of type int")
 }
@@ -101,17 +106,21 @@ func (s *ProtocolValueTestSuite) TestGetProtocolValue() {
 func (s *ProtocolValueTestSuite) TestBashCompletionProtocol() {
 	c := &cobra.Command{}
 	f := c.Flags().VarPF(s.value, "protocol", "p", "set protocol")
+
 	// Check if the complete function is appended
 	err := flags.BashCompletionProtocol(c, c.Flags(), "protocol")
 	s.Require().NoError(err)
 	s.Assert().Contains(c.BashCompletionFunction, "__fbender_handle_dns_protocol_flag")
+
 	// Check if the flag has the bash
 	s.Require().Contains(f.Annotations, "cobra_annotation_bash_completion_custom")
 	s.Assert().Equal([]string{"__fbender_handle_dns_protocol_flag"},
 		f.Annotations["cobra_annotation_bash_completion_custom"])
+
 	// Check if the function is appended only once
 	err = flags.BashCompletionProtocol(c, c.Flags(), "protocol")
 	s.Require().NoError(err)
+
 	count := strings.Count(c.BashCompletionFunction, "__fbender_handle_dns_protocol_flag")
 	s.Assert().Equal(1, count, "Completion function should be added only once")
 }
