@@ -9,7 +9,6 @@ LICENSE file in the root directory of this source tree.
 package flags_test
 
 import (
-	"errors"
 	"testing"
 	"time"
 
@@ -53,9 +52,11 @@ func (m *MockedMetricParsers) ParserA(name string) (tester.Metric, error) {
 	err := args.Error(1)
 
 	if constraint, ok := constraint.(tester.Metric); ok {
+		//nolint:wrapcheck
 		return constraint, err
 	}
 
+	//nolint:wrapcheck
 	return nil, err
 }
 
@@ -65,9 +66,11 @@ func (m *MockedMetricParsers) ParserB(name string) (tester.Metric, error) {
 	err := args.Error(1)
 
 	if constraint, ok := constraint.(tester.Metric); ok {
+		//nolint:wrapcheck
 		return constraint, err
 	}
 
+	//nolint:wrapcheck
 	return nil, err
 }
 
@@ -77,9 +80,11 @@ func (m *MockedMetricParsers) ParserC(name string) (tester.Metric, error) {
 	err := args.Error(1)
 
 	if constraint, ok := constraint.(tester.Metric); ok {
+		//nolint:wrapcheck
 		return constraint, err
 	}
 
+	//nolint:wrapcheck
 	return nil, err
 }
 
@@ -117,13 +122,13 @@ func TestNewConstraintSliceValue(t *testing.T) {
 }
 
 func (s *ConstraintsSliceValueTestSuite) TestType() {
-	s.Assert().Equal("constraintSlice", s.value.Type())
+	s.Assert().Equal("constraints", s.value.Type())
 }
 
 func (s *ConstraintsSliceValueTestSuite) TestSet_ParsersCalledInOrder() {
-	// ParserA doesn't parse, returns ErrNotParsed
+	// ParserA doesn't parse, returns ErrNotParsed.
 	s.parsers.On("ParserA", "metric_0").Return(nil, tester.ErrNotParsed).Once()
-	// ParserB parses and returns a constraint
+	// ParserB parses and returns a constraint.
 	s.parsers.On("ParserB", "metric_0").Return(s.ms[0], nil).Once()
 
 	// Run the test
@@ -138,34 +143,32 @@ func (s *ConstraintsSliceValueTestSuite) TestSet_ParsersCalledInOrder() {
 }
 
 func (s *ConstraintsSliceValueTestSuite) TestSet_ParsersCalledForEveryValue() {
-	// ParserA doesn't parse any of the metrics, returns ErrNotParsed
+	// ParserA doesn't parse any of the metrics, returns ErrNotParsed.
 	s.parsers.On("ParserA", "metric_0").Return(nil, tester.ErrNotParsed).Once()
 	s.parsers.On("ParserA", "metric_1").Return(nil, tester.ErrNotParsed).Once()
-	// ParserB parses metric_0
+	// ParserB parses metric_0.
 	s.parsers.On("ParserB", "metric_0").Return(s.ms[0], nil).Once()
 	s.parsers.On("ParserB", "metric_1").Return(nil, tester.ErrNotParsed).Once()
-	// ParserC parses metric_1
+	// ParserC parses metric_1.
 	s.parsers.On("ParserC", "metric_1").Return(s.ms[1], nil).Once()
 
-	// Run the test
+	// Run the test.
 	err := s.value.Set("MAX(metric_0) < 0, MAX(metric_1) < 10.0")
 	s.Require().NoError(err)
 	s.parsers.AssertExpectations(s.T())
 
-	// Check if constraints were parsed
+	// Check if constraints were parsed.
 	cs, err := flags.GetConstraintsValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().ElementsMatch(cs, s.cs[:2])
 }
 
 func (s *ConstraintsSliceValueTestSuite) TestSet_ErrorsOnError() {
-	errFatal := errors.New("fatal error on parser B")
-
 	s.parsers.On("ParserA", "metric_0").Return(nil, tester.ErrNotParsed).Once()
-	s.parsers.On("ParserB", "metric_0").Return(nil, errFatal).Once()
+	s.parsers.On("ParserB", "metric_0").Return(nil, assert.AnError).Once()
 
 	err := s.value.Set("MIN(metric_0) > 42.0")
-	s.Require().Equal(err, errFatal)
+	s.Assert().ErrorIs(err, assert.AnError)
 	s.parsers.AssertExpectations(s.T())
 }
 
@@ -175,7 +178,7 @@ func (s *ConstraintsSliceValueTestSuite) TestSet_ErrorsOnNotParsed() {
 	s.parsers.On("ParserC", "metric_0").Return(nil, tester.ErrNotParsed).Once()
 
 	err := s.value.Set("MAX(metric_0) < 0.0")
-	s.Assert().Equal(err, tester.ErrNotParsed)
+	s.Assert().ErrorIs(err, tester.ErrNotParsed)
 	s.parsers.AssertExpectations(s.T())
 }
 
@@ -184,42 +187,47 @@ func (s *ConstraintsSliceValueTestSuite) TestSet_AppendsOnConsecutiveCalls() {
 	s.parsers.On("ParserA", "metric_1").Return(s.ms[1], nil).Once()
 	s.parsers.On("ParserA", "metric_2").Return(s.ms[2], nil).Once()
 
-	// Run the test
+	// Run the test.
 	err := s.value.Set("MAX(metric_0) < 0.0")
 	s.Require().NoError(err)
 	err = s.value.Set("MAX(metric_1) < 10.0, MAX(metric_2) < 20.0")
 	s.Require().NoError(err)
-	s.Require().NoError(err)
 	s.parsers.AssertExpectations(s.T())
 
-	// Check if constraints were parsed
+	// Check if constraints were parsed.
 	cs, err := flags.GetConstraintsValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().ElementsMatch(cs, s.cs[:3])
 }
 
 func (s *ConstraintsSliceValueTestSuite) TestString() {
-	// No constraints
+	// No constraints.
 	s.Assert().Equal("[]", s.value.String())
 
-	// Single constraint
+	// Single constraint.
 	s.parsers.On("ParserA", "metric_0").Return(s.ms[0], nil).Once()
 	s.ms[0].On("Name").Return("metric_0").Once()
+
 	err := s.value.Set("MAX(metric_0) < 0.0")
 	s.Require().NoError(err)
 	s.parsers.AssertExpectations(s.T())
+
 	v := s.value.String()
+
 	s.ms[0].AssertExpectations(s.T())
 	s.Assert().Equal("[MAX(metric_0) < 0.00]", v)
 
-	// Multiple constraints
+	// Multiple constraints.
 	s.parsers.On("ParserA", "metric_1").Return(s.ms[1], nil).Once()
 	s.ms[0].On("Name").Return("metric_0").Once()
 	s.ms[1].On("Name").Return("metric_1").Once()
+
 	err = s.value.Set("MAX(metric_1) < 10.0")
 	s.Require().NoError(err)
 	s.parsers.AssertExpectations(s.T())
+
 	v = s.value.String()
+
 	s.ms[0].AssertExpectations(s.T())
 	s.ms[1].AssertExpectations(s.T())
 	s.Assert().Equal("[MAX(metric_0) < 0.00 MAX(metric_1) < 10.00]", v)
@@ -240,12 +248,14 @@ func (s *ConstraintsSliceValueTestSuite) TestGetConstraints() {
 
 	// Check error when flag does not exist
 	_, err = flags.GetConstraints(f, "nonexistent")
-	s.Assert().EqualError(err, "flag nonexistent accessed but not defined")
+	s.Assert().ErrorIs(err, flags.ErrUndefined)
+	s.Assert().EqualError(err, "flag accessed but not defined: \"nonexistent\"")
 
 	// Check error when value is of different type
 	f.Int("myint", 0, "set myint")
 	_, err = flags.GetConstraints(f, "myint")
-	s.Assert().EqualError(err, "trying to get constraints value of flag of type int")
+	s.Assert().ErrorIs(err, flags.ErrInvalidType)
+	s.Assert().EqualError(err, "accessed flag type does not match, want: constraints, got: int")
 }
 
 func (s *ConstraintsSliceValueTestSuite) TestGetConstraintsValue() {
@@ -264,7 +274,8 @@ func (s *ConstraintsSliceValueTestSuite) TestGetConstraintsValue() {
 	flag := f.Lookup("myint")
 	s.Require().NotNil(flag)
 	_, err = flags.GetConstraintsValue(flag.Value)
-	s.Assert().EqualError(err, "trying to get constraints value of flag of type int")
+	s.Assert().ErrorIs(err, flags.ErrInvalidType)
+	s.Assert().EqualError(err, "accessed flag type does not match, want: constraints, got: int")
 }
 
 func TestConstraintsSliceValueTestSuite(t *testing.T) {

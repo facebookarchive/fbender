@@ -27,9 +27,13 @@ func (g *GrowthValue) String() string {
 // Set validates a given growth and saves it.
 func (g *GrowthValue) Set(value string) error {
 	var err error
-	g.Growth, err = tester.ParseGrowth(value)
 
-	return err
+	g.Growth, err = tester.ParseGrowth(value)
+	if err != nil {
+		return fmt.Errorf("error parsing growth %q: %w", value, err)
+	}
+
+	return nil
 }
 
 // Type returns a growth value type.
@@ -41,7 +45,7 @@ func (g *GrowthValue) Type() string {
 func GetGrowth(f *pflag.FlagSet, name string) (tester.Growth, error) {
 	flag := f.Lookup(name)
 	if flag == nil {
-		return nil, fmt.Errorf("flag %s accessed but not defined", name)
+		return nil, fmt.Errorf("%w: %q", ErrUndefined, name)
 	}
 
 	return GetGrowthValue(flag.Value)
@@ -53,5 +57,5 @@ func GetGrowthValue(v pflag.Value) (tester.Growth, error) {
 		return growth.Growth, nil
 	}
 
-	return nil, fmt.Errorf("trying to get growth value of flag of type %s", v.Type())
+	return nil, fmt.Errorf("%w, want: *GrowthValue, got: %T", ErrInvalidType, v)
 }

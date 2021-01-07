@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 package flags
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"sort"
@@ -36,6 +37,9 @@ func LogLevelChoices() []string {
 	return choices
 }
 
+// ErrInvalidLogLevel is raised when an unknown level is set.
+var ErrInvalidLogLevel = errors.New("invalid log level")
+
 func (l *LogLevel) String() string {
 	return l.Logger.Level.String()
 }
@@ -48,7 +52,8 @@ func (l *LogLevel) Set(value string) error {
 		if err != nil || v >= uint64(len(logrus.AllLevels)) {
 			choices := ChoicesString(LogLevelChoices())
 
-			return fmt.Errorf("level must be an integer [0..%d] or %s", len(logrus.AllLevels)-1, choices)
+			return fmt.Errorf("%w, want: integer [0..%d] or %s, got: %s",
+				ErrInvalidLogLevel, len(logrus.AllLevels)-1, choices, value)
 		}
 
 		level = logrus.Level(v)
@@ -74,11 +79,11 @@ const (
 func BashCompletionLogLevel(cmd *cobra.Command, f *pflag.FlagSet, name string) error {
 	flag := f.Lookup(name)
 	if flag == nil {
-		return fmt.Errorf("flag %s accessed but not defined", name)
+		return fmt.Errorf("%w: %q", ErrUndefined, name)
 	}
 
 	if _, ok := flag.Value.(*LogLevel); !ok {
-		return fmt.Errorf("trying to autocomplete level on flag of type %s", flag.Value.Type())
+		return fmt.Errorf("%w, want: level, got: %s", ErrInvalidType, flag.Value.Type())
 	}
 
 	fbody := fmt.Sprintf(fbodyLogLevel, strings.Join(LogLevelChoices(), " "))
@@ -117,6 +122,9 @@ func LogFormatChoices() []string {
 	return choices
 }
 
+// ErrInvalidLogFormat is raised when an unknown format is set.
+var ErrInvalidLogFormat = errors.New("invalid log format")
+
 func (l *LogFormat) String() string {
 	return l.Format
 }
@@ -130,7 +138,8 @@ func (l *LogFormat) Set(value string) error {
 		return nil
 	}
 
-	return fmt.Errorf("logformat must be one of %s", ChoicesString(LogFormatChoices()))
+	return fmt.Errorf("%w, want: %s, got: %q",
+		ErrInvalidLogFormat, ChoicesString(LogFormatChoices()), value)
 }
 
 // Type returns a log format value type.
@@ -148,11 +157,11 @@ const (
 func BashCompletionLogFormat(cmd *cobra.Command, f *pflag.FlagSet, name string) error {
 	flag := f.Lookup(name)
 	if flag == nil {
-		return fmt.Errorf("flag %s accessed but not defined", name)
+		return fmt.Errorf("%w: %q", ErrUndefined, name)
 	}
 
 	if _, ok := flag.Value.(*LogFormat); !ok {
-		return fmt.Errorf("trying to autocomplete format on flag of type %s", flag.Value.Type())
+		return fmt.Errorf("%w, want: format, got: %s", ErrInvalidType, flag.Value.Type())
 	}
 
 	fbody := fmt.Sprintf(fbodyLogFormat, strings.Join(LogFormatChoices(), " "))
@@ -192,7 +201,7 @@ func (l *LogOutput) Set(value string) error {
 	// Close any file we have been writing to.
 	if l.Out != nil && l.Out != os.Stdout && l.Out != os.Stderr {
 		if err := l.Out.Close(); err != nil {
-			return err
+			return fmt.Errorf("unable to close output %q: %w", l.Out.Name(), err)
 		}
 	}
 
@@ -200,7 +209,7 @@ func (l *LogOutput) Set(value string) error {
 	if len(value) > 0 {
 		file, err := os.Create(value)
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to create output %q: %w", value, err)
 		}
 
 		l.Out = file

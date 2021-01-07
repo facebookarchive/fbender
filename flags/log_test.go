@@ -135,11 +135,15 @@ func TestLogLevel__Set(t *testing.T) {
 
 	// Setting unknown level string should fail
 	err = logLevel.Set("unknown")
-	assert.EqualError(t, err, "level must be an integer [0..6] or (panic|fatal|error|warning|info|debug|trace)")
+	assert.ErrorIs(t, err, flags.ErrInvalidLogLevel)
+	assert.EqualError(t, err,
+		"invalid log level, want: integer [0..6] or (panic|fatal|error|warning|info|debug|trace), got: unknown")
 
 	// Setting too large integer
 	err = logLevel.Set("7")
-	assert.EqualError(t, err, "level must be an integer [0..6] or (panic|fatal|error|warning|info|debug|trace)")
+	assert.ErrorIs(t, err, flags.ErrInvalidLogLevel)
+	assert.EqualError(t, err,
+		"invalid log level, want: integer [0..6] or (panic|fatal|error|warning|info|debug|trace), got: 7")
 }
 
 func TestLogLevel__Type(t *testing.T) {
@@ -167,13 +171,15 @@ __fbender_handle_loglevel_flag() {
 
 	// Check error when flag is not defined
 	err = flags.BashCompletionLogLevel(c, c.Flags(), "nonexistent")
-	assert.EqualError(t, err, "flag nonexistent accessed but not defined")
+	assert.ErrorIs(t, err, flags.ErrUndefined)
+	assert.EqualError(t, err, "flag accessed but not defined: \"nonexistent\"")
 
 	// Check error when flag is not a level
 	c.Flags().Int("myint", 0, "set myint")
 
 	err = flags.BashCompletionLogLevel(c, c.Flags(), "myint")
-	assert.EqualError(t, err, "trying to autocomplete level on flag of type int")
+	assert.ErrorIs(t, err, flags.ErrInvalidType)
+	assert.EqualError(t, err, "accessed flag type does not match, want: level, got: int")
 }
 
 func TestLogFormatChoices(t *testing.T) {
@@ -206,7 +212,8 @@ func TestLogFormat__Set(t *testing.T) {
 
 	// Setting unknown format string should fail
 	err = logFormat.Set("unknown")
-	assert.EqualError(t, err, "logformat must be one of (json|text)")
+	assert.ErrorIs(t, err, flags.ErrInvalidLogFormat)
+	assert.EqualError(t, err, "invalid log format, want: (json|text), got: \"unknown\"")
 }
 
 func TestLogFormat__Type(t *testing.T) {
@@ -232,12 +239,14 @@ __fbender_handle_logformat_flag() {
 
 	// Check error when flag is not defined
 	err = flags.BashCompletionLogFormat(c, c.Flags(), "nonexistent")
-	assert.EqualError(t, err, "flag nonexistent accessed but not defined")
+	assert.ErrorIs(t, err, flags.ErrUndefined)
+	assert.EqualError(t, err, "flag accessed but not defined: \"nonexistent\"")
 
 	// Check error when flag is not a format
 	c.Flags().Int("myint", 0, "set myint")
 	err = flags.BashCompletionLogFormat(c, c.Flags(), "myint")
-	assert.EqualError(t, err, "trying to autocomplete format on flag of type int")
+	assert.ErrorIs(t, err, flags.ErrInvalidType)
+	assert.EqualError(t, err, "accessed flag type does not match, want: format, got: int")
 }
 
 func TestNewLogOutput(t *testing.T) {
@@ -301,8 +310,7 @@ func TestLogOutput__Set(t *testing.T) {
 
 	err = logFile.Close()
 	require.Error(t, err)
-
-	require.Contains(t, err.Error(), "file already closed")
+	require.ErrorIs(t, err, os.ErrClosed)
 }
 
 func TestLogOutput__Type(t *testing.T) {

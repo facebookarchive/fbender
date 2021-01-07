@@ -22,61 +22,62 @@ import (
 func TestNewDefaultDistribution(t *testing.T) {
 	distribution := flags.NewDefaultDistribution()
 	require.NotNil(t, distribution)
-	assert.Equal(t, distribution.Name, "uniform")
-	assert.Equal(t, distribution.String(), "uniform")
-	assertPointerEqual(t, distribution.Get(), bender.UniformIntervalGenerator, "Expected uniform distribution")
+	assert.Equal(t, "uniform", distribution.Name)
+	assert.Equal(t, "uniform", distribution.String())
+	assertPointerEqual(t, bender.UniformIntervalGenerator, distribution.Get(), "Expected uniform distribution")
 }
 
 func TestDistributionChoices(t *testing.T) {
 	expected := []string{"uniform", "exponential"}
-	assert.ElementsMatch(t, flags.DistributionChoices(), expected)
+	assert.ElementsMatch(t, expected, flags.DistributionChoices())
 }
 
 func TestDistribution__String(t *testing.T) {
 	distribution := new(flags.Distribution)
 	err := distribution.Set("uniform")
 	require.NoError(t, err)
-	assert.Equal(t, distribution.String(), "uniform")
+	assert.Equal(t, "uniform", distribution.String())
 	err = distribution.Set("exponential")
 	require.NoError(t, err)
-	assert.Equal(t, distribution.String(), "exponential")
-	// Check if the name is full even if we do prefix match
+	assert.Equal(t, "exponential", distribution.String())
+	// Check if the name is full even if we do prefix match.
 	err = distribution.Set("uni")
 	require.NoError(t, err)
-	assert.Equal(t, distribution.String(), "uniform")
+	assert.Equal(t, "uniform", distribution.String())
 	err = distribution.Set("exp")
 	require.NoError(t, err)
-	assert.Equal(t, distribution.String(), "exponential")
+	assert.Equal(t, "exponential", distribution.String())
 }
 
 func TestDistribution__Set(t *testing.T) {
 	distribution := new(flags.Distribution)
-	// Setting known distribution
+	// Setting known distribution.
 	err := distribution.Set("uniform")
 	require.NoError(t, err)
-	assert.Equal(t, distribution.Name, "uniform")
-	assertPointerEqual(t, distribution.Get(), bender.UniformIntervalGenerator, "Expected uniform distribution")
+	assert.Equal(t, "uniform", distribution.Name)
+	assertPointerEqual(t, bender.UniformIntervalGenerator, distribution.Get(), "Expected uniform distribution")
 	err = distribution.Set("exponential")
 	require.NoError(t, err)
 	assert.Equal(t, distribution.Name, "exponential")
-	assertPointerEqual(t, distribution.Get(), bender.ExponentialIntervalGenerator, "Expected exponential distribution")
-	// Setting known distribution through an unambiguous prefix
+	assertPointerEqual(t, bender.ExponentialIntervalGenerator, distribution.Get(), "Expected exponential distribution")
+	// Setting known distribution through an unambiguous prefix.
 	err = distribution.Set("u")
 	require.NoError(t, err)
 	assert.Equal(t, distribution.Name, "uniform")
-	assertPointerEqual(t, distribution.Get(), bender.UniformIntervalGenerator, "Expected uniform distribution")
+	assertPointerEqual(t, bender.UniformIntervalGenerator, distribution.Get(), "Expected uniform distribution")
 	err = distribution.Set("e")
 	require.NoError(t, err)
 	assert.Equal(t, distribution.Name, "exponential")
-	assertPointerEqual(t, distribution.Get(), bender.ExponentialIntervalGenerator, "Expected exponential distribution")
-	// Setting unknown distribution should fail
+	assertPointerEqual(t, bender.ExponentialIntervalGenerator, distribution.Get(), "Expected exponential distribution")
+	// Setting unknown distribution should fail.
 	err = distribution.Set("unknown")
-	assert.EqualError(t, err, "generator must be one of (exponential|uniform), 'unknown' given")
-	// Setting known distribution through an ambiguous prefix should fail
+	assert.ErrorIs(t, err, flags.ErrInvalidGenerator)
+	assert.EqualError(t, err, "invalid generator, want: (exponential|uniform), got: \"unknown\"")
+	// Setting known distribution through an ambiguous prefix should fail.
 	err = distribution.Set("")
-	// We cannot check directly because map is unordered
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "ambiguous generator '' matches")
+	assert.ErrorIs(t, err, flags.ErrInvalidGenerator)
+	assert.EqualError(t, err, "invalid generator, ambiguous prefix \"\" matches: (exponential|uniform)")
 }
 
 func TestDistribution__Type(t *testing.T) {
@@ -88,17 +89,17 @@ func TestDistribution__Get(t *testing.T) {
 	distribution := new(flags.Distribution)
 	err := distribution.Set("uniform")
 	require.NoError(t, err)
-	assertPointerEqual(t, distribution.Get(), bender.UniformIntervalGenerator, "Expected uniform distribution")
+	assertPointerEqual(t, bender.UniformIntervalGenerator, distribution.Get(), "Expected uniform distribution")
 	err = distribution.Set("exponential")
 	require.NoError(t, err)
-	assertPointerEqual(t, distribution.Get(), bender.ExponentialIntervalGenerator, "Expected exponential distribution")
+	assertPointerEqual(t, bender.ExponentialIntervalGenerator, distribution.Get(), "Expected exponential distribution")
 	// Check if the distribution function is properly set if we do prefix match
 	err = distribution.Set("uni")
 	require.NoError(t, err)
-	assertPointerEqual(t, distribution.Get(), bender.UniformIntervalGenerator, "Expected uniform distribution")
+	assertPointerEqual(t, bender.UniformIntervalGenerator, distribution.Get(), "Expected uniform distribution")
 	err = distribution.Set("exp")
 	require.NoError(t, err)
-	assertPointerEqual(t, distribution.Get(), bender.ExponentialIntervalGenerator, "Expected exponential distribution")
+	assertPointerEqual(t, bender.ExponentialIntervalGenerator, distribution.Get(), "Expected exponential distribution")
 }
 
 func TestGetDistribution(t *testing.T) {
@@ -109,20 +110,21 @@ func TestGetDistribution(t *testing.T) {
 	require.NoError(t, err)
 	dist, err := flags.GetDistribution(f, "distribution")
 	require.NoError(t, err)
-	assertPointerEqual(t, dist, bender.UniformIntervalGenerator)
-	// Check if value changes
+	assertPointerEqual(t, bender.UniformIntervalGenerator, dist, "Expected uniform distribution")
+	// Check if value changes.
 	err = distribution.Set("exponential")
 	require.NoError(t, err)
 	dist, err = flags.GetDistribution(f, "distribution")
 	require.NoError(t, err)
-	assertPointerEqual(t, dist, bender.ExponentialIntervalGenerator)
-	// Check if error when flag does not exist
+	assertPointerEqual(t, bender.ExponentialIntervalGenerator, dist, "Expected exponential distribution")
+	// Check if error when flag does not exist.
 	_, err = flags.GetDistribution(f, "nonexistent")
-	assert.EqualError(t, err, "flag nonexistent accessed but not defined")
-	// Check if error when value is of different type
+	assert.ErrorIs(t, err, flags.ErrUndefined)
+	// Check if error when value is of different type.
 	f.Int("myint", 0, "set myint")
 	_, err = flags.GetDistribution(f, "myint")
-	assert.EqualError(t, err, "trying to get distribution value of flag of type int")
+	assert.ErrorIs(t, err, flags.ErrInvalidType)
+	assert.EqualError(t, err, "accessed flag type does not match, want: distribution, got: int")
 }
 
 func TestGetDistributionValue(t *testing.T) {
@@ -131,20 +133,21 @@ func TestGetDistributionValue(t *testing.T) {
 	require.NoError(t, err)
 	dist, err := flags.GetDistributionValue(distribution)
 	require.NoError(t, err)
-	assertPointerEqual(t, dist, bender.UniformIntervalGenerator)
-	// Check if value changes
+	assertPointerEqual(t, bender.UniformIntervalGenerator, dist, "Expected uniform distribution")
+	// Check if value changes.
 	err = distribution.Set("exponential")
 	require.NoError(t, err)
 	dist, err = flags.GetDistributionValue(distribution)
 	require.NoError(t, err)
-	assertPointerEqual(t, dist, bender.ExponentialIntervalGenerator)
-	// Check if error when value is of different type
+	assertPointerEqual(t, bender.ExponentialIntervalGenerator, dist, "Expected exponential distribution")
+	// Check if error when value is of different type.
 	f := pflag.NewFlagSet("Test FlagSet", pflag.ExitOnError)
 	f.Int("myint", 0, "set myint")
 	flag := f.Lookup("myint")
 	require.NotNil(t, flag)
 	_, err = flags.GetDistributionValue(flag.Value)
-	assert.EqualError(t, err, "trying to get distribution value of flag of type int")
+	assert.ErrorIs(t, err, flags.ErrInvalidType)
+	assert.EqualError(t, err, "accessed flag type does not match, want: distribution, got: int")
 }
 
 func TestBashCompletionDistribution(t *testing.T) {
@@ -159,9 +162,10 @@ func TestBashCompletionDistribution(t *testing.T) {
 		f.Annotations["cobra_annotation_bash_completion_custom"])
 	// Check error when flag is not defined
 	err = flags.BashCompletionDistribution(c, c.Flags(), "nonexistent")
-	assert.EqualError(t, err, "flag nonexistent accessed but not defined")
+	assert.ErrorIs(t, err, flags.ErrUndefined)
 	// Check error when flag is not a distribution
 	c.Flags().Int("myint", 0, "set myint")
 	err = flags.BashCompletionDistribution(c, c.Flags(), "myint")
-	assert.EqualError(t, err, "trying to autocomplete distribution on flag of type int")
+	assert.ErrorIs(t, err, flags.ErrInvalidType)
+	assert.EqualError(t, err, "accessed flag type does not match, want: distribution, got: int")
 }

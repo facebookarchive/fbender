@@ -22,6 +22,4 @@ linters:
     - dupl
     - gomnd
     - exhaustivestruct
-    - wrapcheck
-    - goerr113
     - paralleltest
