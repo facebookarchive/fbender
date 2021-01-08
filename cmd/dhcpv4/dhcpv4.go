@@ -30,6 +30,7 @@ func params(cmd *cobra.Command, o *options.Options) (*runner.Params, error) {
 
 	r, err := input.NewRequestGenerator(o.Input, inputTransformer(optionCodes))
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
@@ -53,11 +54,13 @@ func inputTransformer(optionCodes []dhcpv4.OptionCode) input.Transformer {
 	return func(input string) (interface{}, error) {
 		mac, err := net.ParseMAC(input)
 		if err != nil {
+			//nolint:wrapcheck
 			return nil, err
 		}
 
 		discover, err := dhcpv4.New()
 		if err != nil {
+			//nolint:wrapcheck
 			return nil, err
 		}
 
