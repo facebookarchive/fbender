@@ -1,5 +1,5 @@
 # FBender
-[![Build Status](https://travis-ci.org/facebookincubator/fbender.svg?branch=master)](https://travis-ci.org/facebookincubator/fbender)
+[![Build Status](https://github.com/facebookincubator/fbender/workflows/Go/badge.svg)](https://github.com/facebookincubator/fbender/actions)
 [![codecov](https://codecov.io/gh/facebookincubator/fbender/branch/master/graph/badge.svg)](https://codecov.io/gh/facebookincubator/fbender)
 [![Go Report Card](https://goreportcard.com/badge/github.com/facebookincubator/fbender)](https://goreportcard.com/report/github.com/facebookincubator/fbender)
 
