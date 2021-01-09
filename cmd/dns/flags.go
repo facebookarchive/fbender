@@ -9,8 +9,10 @@ LICENSE file in the root directory of this source tree.
 package dns
 
 import (
+	"errors"
 	"fmt"
 
+	"github.com/facebookincubator/fbender/flags"
 	"github.com/facebookincubator/fbender/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -22,6 +24,9 @@ var protocols = map[string]struct{}{
 	"udp": {},
 	"tcp": {},
 }
+
+// ErrInvalidProtocol is raised when an unknown protocol is set.
+var ErrInvalidProtocol = errors.New("invalid protocol")
 
 type protocolValue struct {
 	value string
@@ -39,7 +44,7 @@ func (s *protocolValue) Set(value string) error {
 		return nil
 	}
 
-	return fmt.Errorf("unknown protocol %q, want: \"udp\" or \"tcp\"", value)
+	return fmt.Errorf("%w, want: \"udp\" or \"tcp\", got: %q", ErrInvalidProtocol, value)
 }
 
 func (s *protocolValue) Type() string {
@@ -54,7 +59,7 @@ func (s *protocolValue) String() string {
 func GetProtocol(f *pflag.FlagSet, name string) (string, error) {
 	flag := f.Lookup(name)
 	if flag == nil {
-		return "", fmt.Errorf("flag %s accessed but not defined", name)
+		return "", fmt.Errorf("%w: %q", flags.ErrUndefined, name)
 	}
 
 	return GetProtocolValue(flag.Value)
@@ -66,7 +71,7 @@ func GetProtocolValue(v pflag.Value) (string, error) {
 		return protocol.value, nil
 	}
 
-	return "", fmt.Errorf("trying to get protocol value of flag of type %s", v.Type())
+	return "", fmt.Errorf("%w, want: protocol, got: %s", flags.ErrInvalidType, v.Type())
 }
 
 // Bash completion function constants.

@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/facebookincubator/fbender/cmd/core/errors"
 	"github.com/facebookincubator/fbender/cmd/core/input"
 	"github.com/facebookincubator/fbender/cmd/core/options"
 	"github.com/facebookincubator/fbender/cmd/core/runner"
@@ -28,6 +29,7 @@ const DefaultServerPort = 53
 func params(cmd *cobra.Command, o *options.Options) (*runner.Params, error) {
 	randomize, err := cmd.Flags().GetBool("randomize")
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
@@ -38,6 +40,7 @@ func params(cmd *cobra.Command, o *options.Options) (*runner.Params, error) {
 
 	r, err := input.NewRequestGenerator(o.Input, inputTransformer, getModifiers(randomize)...)
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
@@ -55,12 +58,12 @@ func inputTransformer(input string) (interface{}, error) {
 
 	n, err := fmt.Sscanf(input, "%s %s %s", &domain, &typeString, &rcodeString)
 	if err != nil && n < 2 {
-		return nil, fmt.Errorf("invalid input: %q, want: \"Domain QType [RCode]\"", input)
+		return nil, fmt.Errorf("%w, want: \"Domain QType [RCode]\", got: %q", errors.ErrInvalidFormat, input)
 	}
 
 	msgTyp, ok := dns.StringToType[strings.ToUpper(typeString)]
 	if !ok {
-		return nil, fmt.Errorf("invalid QType: %q", typeString)
+		return nil, fmt.Errorf("%w, invalid QType: %q", errors.ErrInvalidFormat, typeString)
 	}
 
 	msg := new(tester.ExtendedMsg)
@@ -71,7 +74,7 @@ func inputTransformer(input string) (interface{}, error) {
 	if n == 3 {
 		rcode, ok := dns.StringToRcode[rcodeString]
 		if !ok {
-			return nil, fmt.Errorf("invalid RCode: %q", rcodeString)
+			return nil, fmt.Errorf("%w, invalid RCode: %q", errors.ErrInvalidFormat, rcodeString)
 		}
 
 		msg.Rcode = rcode
@@ -93,11 +96,12 @@ const prefixLength = 16
 func randomPrefixModifier(request interface{}) (interface{}, error) {
 	msg, ok := request.(*tester.ExtendedMsg)
 	if !ok {
-		return nil, fmt.Errorf("invalid request type: %T, want: *dns.ExtendedMsg", request)
+		return nil, fmt.Errorf("%w, want: *dns.ExtendedMsg, got: %T", errors.ErrInvalidType, request)
 	}
 
 	hex, err := utils.RandomHex(prefixLength)
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
