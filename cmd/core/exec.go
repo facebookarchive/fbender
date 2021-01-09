@@ -49,6 +49,7 @@ func exec(p CommandParams, e executor, gs ...OptionsGenerator) cobraRunE {
 func setupConstraints(o *options.Options, cmd *cobra.Command, args []string) (*options.Options, error) {
 	for _, constraint := range o.Constraints {
 		if err := constraint.Metric.Setup(o); err != nil {
+			//nolint:wrapcheck
 			return nil, err
 		}
 	}

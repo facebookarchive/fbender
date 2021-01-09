@@ -10,10 +10,11 @@ package input
 
 import (
 	"bufio"
-	"errors"
+	"fmt"
 	"io"
 	"os"
 
+	"github.com/facebookincubator/fbender/cmd/core/errors"
 	"github.com/facebookincubator/fbender/cmd/core/runner"
 	"github.com/facebookincubator/fbender/log"
 )
@@ -39,7 +40,7 @@ func NewRequestGenerator(filename string, transformer Transformer, mods ...Modif
 
 	data := parse(file, transformer)
 	if len(data) < 1 {
-		return nil, errors.New("at least one valid input line is required")
+		return nil, fmt.Errorf("%w: at least one valid input line is required", errors.ErrInvalidFormat)
 	}
 
 	return func(i int) interface{} {

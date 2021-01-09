@@ -15,3 +15,6 @@ var ErrInvalidFormat = errors.New("invalid format")
 
 // ErrInvalidType is raised when provided object is not of the desired type.
 var ErrInvalidType = errors.New("invalid type")
+
+// ErrInvalidArgument is raised when the command is given invalid arguments.
+var ErrInvalidArgument = errors.New("invalid argument")

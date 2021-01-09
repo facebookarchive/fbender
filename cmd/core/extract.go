@@ -26,6 +26,7 @@ func ExtractTests(args []string) ([]int, error) {
 	for _, arg := range args {
 		value, err := strconv.Atoi(arg)
 		if err != nil {
+			//nolint:wrapcheck
 			return nil, err
 		}
 
@@ -63,41 +64,49 @@ func ExtractOptions(o *options.Options, cmd *cobra.Command, _ []string) (*option
 
 	o.Target, err = cmd.Flags().GetString("target")
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
 	o.Duration, err = cmd.Flags().GetDuration("duration")
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
 	o.Input, err = cmd.Flags().GetString("input")
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
 	o.BufferSize, err = cmd.Flags().GetInt("buffer")
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
 	o.Timeout, err = cmd.Flags().GetDuration("timeout")
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
 	o.Distribution, err = flags.GetDistribution(cmd.Flags(), "dist")
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
 	o.Unit, err = cmd.Flags().GetDuration("unit")
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
 	o.NoStatistics, err = cmd.Flags().GetBool("nostats")
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
@@ -114,11 +123,13 @@ func ExtractConstraintsOptions(o *options.Options, cmd *cobra.Command, _ []strin
 
 	o.Constraints, err = flags.GetConstraints(cmd.Flags(), "constraints")
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
 	o.Growth, err = flags.GetGrowth(cmd.Flags(), "growth")
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
