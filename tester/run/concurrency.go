@@ -19,6 +19,7 @@ import (
 func LoadTestConcurrencyFixed(r tester.ConcurrencyRunner, o interface{}, ws ...tester.Workers) error {
 	t := r.Tester()
 	if err := t.Before(o); err != nil {
+		//nolint:wrapcheck
 		return err
 	}
 
@@ -38,6 +39,7 @@ func LoadTestConcurrencyConstraints(r tester.ConcurrencyRunner, o interface{}, s
 	cs ...*tester.Constraint) error {
 	t := r.Tester()
 	if err := t.Before(o); err != nil {
+		//nolint:wrapcheck
 		return err
 	}
 
@@ -66,17 +68,20 @@ func LoadTestConcurrencyConstraints(r tester.ConcurrencyRunner, o interface{}, s
 // loadTestConcurrency runs a single test for a desired QPS.
 func loadTestConcurrency(r tester.ConcurrencyRunner, t tester.Tester, o interface{}, workers tester.Workers) error {
 	if err := t.BeforeEach(o); err != nil {
+		//nolint:wrapcheck
 		return err
 	}
 	defer t.AfterEach(o)
 
 	if err := r.Before(workers, o); err != nil {
+		//nolint:wrapcheck
 		return err
 	}
 	defer r.After(workers, o)
 
 	executor, err := t.RequestExecutor(o)
 	if err != nil {
+		//nolint:wrapcheck
 		return err
 	}
 

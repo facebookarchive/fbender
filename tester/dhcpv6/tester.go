@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 package dhcpv6
 
 import (
+	"fmt"
 	"net"
 	"time"
 
@@ -30,12 +31,12 @@ type Tester struct {
 func (t *Tester) Before(options interface{}) error {
 	target, err := net.ResolveUDPAddr("udp6", t.Target)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to set up the tester: %w", err)
 	}
 
 	ip, err := dhcpv6.GetGlobalAddr("eth0")
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to set up the tester: %w", err)
 	}
 
 	t.client = &async.Client{

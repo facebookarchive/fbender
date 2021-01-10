@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 package tftp
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/pin/tftp"
@@ -31,7 +32,7 @@ func (t *Tester) Before(options interface{}) error {
 
 	t.client, err = tftp.NewClient(t.Target)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to set up the tester: %w", err)
 	}
 
 	t.client.SetTimeout(t.Timeout)

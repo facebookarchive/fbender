@@ -10,15 +10,12 @@ package log_test
 
 import (
 	"bytes"
-	"errors"
 	"testing"
 
 	"github.com/facebookincubator/fbender/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
-
-var ErrDummy = errors.New("dummy error")
 
 type MockedWriter struct {
 	mock.Mock
@@ -38,7 +35,7 @@ func TestFprintf_NoError(t *testing.T) {
 
 func TestFprintf_Error(t *testing.T) {
 	w := new(MockedWriter)
-	w.On("Write", "Hello World").Return(0, ErrDummy)
+	w.On("Write", "Hello World").Return(0, assert.AnError)
 
 	defer func() {
 		if r := recover(); r == nil {
@@ -59,7 +56,7 @@ func TestPrintf_NoError(t *testing.T) {
 func TestPrintf_Error(t *testing.T) {
 	w := new(MockedWriter)
 	log.Stdout = w
-	w.On("Write", "Hello World").Return(0, ErrDummy)
+	w.On("Write", "Hello World").Return(0, assert.AnError)
 
 	defer func() {
 		if r := recover(); r == nil {
@@ -80,7 +77,7 @@ func TestErrorf_NoError(t *testing.T) {
 func TestErrorf_Error(t *testing.T) {
 	w := new(MockedWriter)
 	log.Stderr = w
-	w.On("Write", "Hello World").Return(0, ErrDummy)
+	w.On("Write", "Hello World").Return(0, assert.AnError)
 
 	defer func() {
 		if r := recover(); r == nil {

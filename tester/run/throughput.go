@@ -19,6 +19,7 @@ import (
 func LoadTestThroughputFixed(r tester.ThroughputRunner, o interface{}, qs ...tester.QPS) error {
 	t := r.Tester()
 	if err := t.Before(o); err != nil {
+		//nolint:wrapcheck
 		return err
 	}
 
@@ -38,6 +39,7 @@ func LoadTestThroughputConstraints(r tester.ThroughputRunner, o interface{}, sta
 	cs ...*tester.Constraint) error {
 	t := r.Tester()
 	if err := t.Before(o); err != nil {
+		//nolint:wrapcheck
 		return err
 	}
 
@@ -66,12 +68,14 @@ func LoadTestThroughputConstraints(r tester.ThroughputRunner, o interface{}, sta
 // loadTestThroughput runs a single test for a desired QPS.
 func loadTestThroughput(r tester.ThroughputRunner, t tester.Tester, o interface{}, qps tester.QPS) error {
 	if err := t.BeforeEach(o); err != nil {
+		//nolint:wrapcheck
 		return err
 	}
 
 	defer t.AfterEach(o)
 
 	if err := r.Before(qps, o); err != nil {
+		//nolint:wrapcheck
 		return err
 	}
 
@@ -79,6 +83,7 @@ func loadTestThroughput(r tester.ThroughputRunner, t tester.Tester, o interface{
 
 	executor, err := t.RequestExecutor(o)
 	if err != nil {
+		//nolint:wrapcheck
 		return err
 	}
 

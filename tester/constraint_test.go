@@ -85,6 +85,7 @@ func (s *ParseConstraintTestSuite) TestConstructor() {
 	s.Assert().Equal(err, tester.ErrNotParsed)
 	// Should return error if metric parser returned error.
 	c, err = tester.ParseConstraint("MAX(mymetrics) > 1", func(_ string) (tester.Metric, error) {
+		//nolint:goerr113
 		return nil, errors.New("error")
 	})
 	s.Assert().Nil(c)
@@ -141,6 +142,7 @@ func (s *ParseConstraintTestSuite) TestCheck() {
 	s.Assert().Error(err)
 	s.metric.AssertExpectations(s.T())
 	// If metric.Fetch returned error, Check should result in error.
+	//nolint:goerr113
 	s.metric.On("Fetch", now, time.Second).
 		Return([]tester.DataPoint(nil), errors.New("error")).Once()
 
