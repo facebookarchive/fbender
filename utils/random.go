@@ -17,6 +17,7 @@ import (
 func RandomHex(n int) (string, error) {
 	b := make([]byte, (n+1)/2)
 	if _, err := rand.Read(b); err != nil {
+		//nolint:wrapcheck
 		return "", err
 	}
 

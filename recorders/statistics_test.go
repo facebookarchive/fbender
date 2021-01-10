@@ -9,11 +9,11 @@ LICENSE file in the root directory of this source tree.
 package recorders_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/facebookincubator/fbender/recorders"
 	"github.com/pinterest/bender"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -69,7 +69,7 @@ func (s *StatisticsRecorderTestSuite) TestEndRequestEvent_NoError() {
 }
 
 func (s *StatisticsRecorderTestSuite) TestEndRequestEvent_Error() {
-	s.recordSingleEvent(&bender.EndRequestEvent{Err: errors.New("with error")})
+	s.recordSingleEvent(&bender.EndRequestEvent{Err: assert.AnError})
 	s.Equal(int64(1), s.statistics.Requests)
 	s.Equal(int64(1), s.statistics.Errors)
 }
