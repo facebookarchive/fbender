@@ -12,7 +12,8 @@ import (
 	"strings"
 	"testing"
 
-	flags "github.com/facebookincubator/fbender/cmd/dns"
+	dnsflags "github.com/facebookincubator/fbender/cmd/dns"
+	"github.com/facebookincubator/fbender/flags"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/suite"
@@ -24,7 +25,7 @@ type ProtocolValueTestSuite struct {
 }
 
 func (s *ProtocolValueTestSuite) SetupTest() {
-	s.value = flags.NewProtocolValue()
+	s.value = dnsflags.NewProtocolValue()
 	s.Require().NotNil(s.value)
 }
 
@@ -32,29 +33,30 @@ func (s *ProtocolValueTestSuite) TestSet_NoErrors() {
 	err := s.value.Set("udp")
 	s.Require().NoError(err)
 
-	v, err := flags.GetProtocolValue(s.value)
+	v, err := dnsflags.GetProtocolValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().Equal("udp", v)
 
 	err = s.value.Set("tcp")
 	s.Require().NoError(err)
 
-	v, err = flags.GetProtocolValue(s.value)
+	v, err = dnsflags.GetProtocolValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().Equal("tcp", v)
 }
 
 func (s *ProtocolValueTestSuite) TestSet_Errors() {
 	// Save original flag value
-	o, err := flags.GetProtocolValue(s.value)
+	o, err := dnsflags.GetProtocolValue(s.value)
 	s.Require().NoError(err)
 
 	// Try invalid value
 	err = s.value.Set("unknown")
-	s.Assert().EqualError(err, "unknown protocol \"unknown\", want: \"udp\" or \"tcp\"")
+	s.Assert().ErrorIs(err, dnsflags.ErrInvalidProtocol)
+	s.Assert().EqualError(err, "invalid protocol, want: \"udp\" or \"tcp\", got: \"unknown\"")
 
 	// The value shouldn't change
-	v, err := flags.GetProtocolValue(s.value)
+	v, err := dnsflags.GetProtocolValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().Equal(o, v)
 }
@@ -70,25 +72,27 @@ func (s *ProtocolValueTestSuite) TestGetProtocol() {
 	err := s.value.Set("tcp")
 	s.Require().NoError(err)
 
-	v, err := flags.GetProtocol(f, "protocol")
+	v, err := dnsflags.GetProtocol(f, "protocol")
 	s.Require().NoError(err)
 	s.Assert().Equal("tcp", v)
 
 	// Check error when flag does not exist
-	_, err = flags.GetProtocol(f, "nonexistent")
-	s.Assert().EqualError(err, "flag nonexistent accessed but not defined")
+	_, err = dnsflags.GetProtocol(f, "nonexistent")
+	s.Assert().ErrorIs(err, flags.ErrUndefined)
+	s.Assert().EqualError(err, "flag accessed but not defined: \"nonexistent\"")
 
 	// Check error when value is of different type
 	f.Int("myint", 0, "set myint")
-	_, err = flags.GetProtocol(f, "myint")
-	s.Assert().EqualError(err, "trying to get protocol value of flag of type int")
+	_, err = dnsflags.GetProtocol(f, "myint")
+	s.Assert().ErrorIs(err, flags.ErrInvalidType)
+	s.Assert().EqualError(err, "accessed flag type does not match, want: protocol, got: int")
 }
 
 func (s *ProtocolValueTestSuite) TestGetProtocolValue() {
 	err := s.value.Set("tcp")
 	s.Require().NoError(err)
 
-	v, err := flags.GetProtocolValue(s.value)
+	v, err := dnsflags.GetProtocolValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().Equal("tcp", v)
 
@@ -99,8 +103,9 @@ func (s *ProtocolValueTestSuite) TestGetProtocolValue() {
 	flag := f.Lookup("myint")
 	s.Require().NotNil(flag)
 
-	_, err = flags.GetProtocolValue(flag.Value)
-	s.Assert().EqualError(err, "trying to get protocol value of flag of type int")
+	_, err = dnsflags.GetProtocolValue(flag.Value)
+	s.Assert().ErrorIs(err, flags.ErrInvalidType)
+	s.Assert().EqualError(err, "accessed flag type does not match, want: protocol, got: int")
 }
 
 func (s *ProtocolValueTestSuite) TestBashCompletionProtocol() {
@@ -108,7 +113,7 @@ func (s *ProtocolValueTestSuite) TestBashCompletionProtocol() {
 	f := c.Flags().VarPF(s.value, "protocol", "p", "set protocol")
 
 	// Check if the complete function is appended
-	err := flags.BashCompletionProtocol(c, c.Flags(), "protocol")
+	err := dnsflags.BashCompletionProtocol(c, c.Flags(), "protocol")
 	s.Require().NoError(err)
 	s.Assert().Contains(c.BashCompletionFunction, "__fbender_handle_dns_protocol_flag")
 
@@ -118,7 +123,7 @@ func (s *ProtocolValueTestSuite) TestBashCompletionProtocol() {
 		f.Annotations["cobra_annotation_bash_completion_custom"])
 
 	// Check if the function is appended only once
-	err = flags.BashCompletionProtocol(c, c.Flags(), "protocol")
+	err = dnsflags.BashCompletionProtocol(c, c.Flags(), "protocol")
 	s.Require().NoError(err)
 
 	count := strings.Count(c.BashCompletionFunction, "__fbender_handle_dns_protocol_flag")

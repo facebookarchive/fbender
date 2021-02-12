@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/facebookincubator/fbender/cmd/core/errors"
 	"github.com/facebookincubator/fbender/cmd/core/options"
 	"github.com/facebookincubator/fbender/cmd/core/runner"
 	"github.com/spf13/cobra"
@@ -140,7 +141,7 @@ func NewTestCommand(c *CommandTemplate, p CommandParams) *cobra.Command {
 // fixedArgs validates arguments for a fixed QPS test.
 func fixedArgs(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
-		return fmt.Errorf("requires at least one test value")
+		return fmt.Errorf("%w: requires at least one test value", errors.ErrInvalidArgument)
 	}
 
 	_, err := ExtractTests(args)
@@ -151,7 +152,7 @@ func fixedArgs(cmd *cobra.Command, args []string) error {
 // constraintsArgs validates arguments for a constraints tests.
 func constraintsArgs(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
-		return fmt.Errorf("requires starting test value")
+		return fmt.Errorf("%w: requires starting test value", errors.ErrInvalidArgument)
 	}
 
 	_, err := ExtractTests(args)

@@ -127,6 +127,7 @@ func ParseGrowth(value string) (Growth, error) {
 	case strings.HasPrefix(value, LinearGrowthPrefix):
 		inc, err := strconv.Atoi(strings.TrimPrefix(value, LinearGrowthPrefix))
 		if err != nil {
+			//nolint:wrapcheck
 			return nil, err
 		}
 
@@ -135,6 +136,7 @@ func ParseGrowth(value string) (Growth, error) {
 	case strings.HasPrefix(value, PercentageGrowthPrefix):
 		inc, err := strconv.ParseFloat(strings.TrimPrefix(value, PercentageGrowthPrefix), 64)
 		if err != nil {
+			//nolint:wrapcheck
 			return nil, err
 		}
 
@@ -143,6 +145,7 @@ func ParseGrowth(value string) (Growth, error) {
 	case strings.HasPrefix(value, ExponentialGrowthPrefix):
 		prec, err := strconv.Atoi(strings.TrimPrefix(value, ExponentialGrowthPrefix))
 		if err != nil {
+			//nolint:wrapcheck
 			return nil, err
 		}
 

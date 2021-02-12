@@ -16,10 +16,10 @@ import (
 )
 
 // assertPointerEqual checks whether two pointers are equal.
-func assertPointerEqual(t *testing.T, value, expected interface{}, args ...interface{}) {
+func assertPointerEqual(t *testing.T, expected, actual interface{}, args ...interface{}) {
 	t.Helper()
 
-	valuePointer := reflect.ValueOf(value).Pointer()
 	expectedPointer := reflect.ValueOf(expected).Pointer()
-	assert.Equal(t, valuePointer, expectedPointer, args...)
+	actualPointer := reflect.ValueOf(actual).Pointer()
+	assert.Equal(t, expectedPointer, actualPointer, args...)
 }

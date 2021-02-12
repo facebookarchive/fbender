@@ -9,13 +9,13 @@ LICENSE file in the root directory of this source tree.
 package http
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 
+	"github.com/facebookincubator/fbender/cmd/core/errors"
 	"github.com/facebookincubator/fbender/cmd/core/input"
 	"github.com/facebookincubator/fbender/cmd/core/options"
 	"github.com/facebookincubator/fbender/cmd/core/runner"
@@ -28,11 +28,13 @@ const formats = "'GET RelativeURL' or 'POST RelativeURL FormData'"
 func params(cmd *cobra.Command, o *options.Options) (*runner.Params, error) {
 	ssl, err := cmd.Flags().GetBool("ssl")
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
 	r, err := input.NewRequestGenerator(o.Input, inputTransformer(ssl, o.Target), requestCreator)
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
@@ -52,7 +54,7 @@ func inputTransformer(ssl bool, target string) input.Transformer {
 	return func(input string) (interface{}, error) {
 		i := strings.Index(input, " ")
 		if i < 0 {
-			return nil, fmt.Errorf("input must have a format of %s, got '%s'", formats, input)
+			return nil, fmt.Errorf("%w, want: %s, got: %q", errors.ErrInvalidFormat, formats, input)
 		}
 
 		method, data := input[:i], input[i+1:]
@@ -63,7 +65,7 @@ func inputTransformer(ssl bool, target string) input.Transformer {
 			return parsePostRequest(protocol, target, data)
 		}
 
-		return nil, fmt.Errorf("unknown method %s, want (GET|POST)", method)
+		return nil, fmt.Errorf("%w, want: (GET|POST), got: %q", errors.ErrInvalidFormat, method)
 	}
 }
 
@@ -98,6 +100,7 @@ func (r *postRequest) Create() (*http.Request, error) {
 	//nolint:noctx
 	req, err := http.NewRequest("POST", r.url, strings.NewReader(r.body))
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
@@ -110,11 +113,12 @@ func (r *postRequest) Create() (*http.Request, error) {
 func parsePostRequest(protocol, target, data string) (interface{}, error) {
 	i := strings.Index(data, " ")
 	if i < 0 {
-		return nil, fmt.Errorf("input must have a format of %s, got 'POST %s'", formats, data)
+		return nil, fmt.Errorf("%w, want: %s, got: \"POST %s\"", errors.ErrInvalidFormat, formats, data)
 	}
 
 	form, err := url.ParseQuery(data[i+1:])
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
@@ -134,7 +138,7 @@ func requestCreator(r interface{}) (interface{}, error) {
 		return r.Create()
 	}
 
-	return nil, errors.New("invalid request type")
+	return nil, fmt.Errorf("%w, want: request, got: %T", errors.ErrInvalidType, r)
 }
 
 func joinURL(protocol, target, path string) (string, error) {
@@ -142,5 +146,6 @@ func joinURL(protocol, target, path string) (string, error) {
 	rawurl := fmt.Sprintf("%s://%s/%s", protocol, target, path)
 	_, err := url.Parse(rawurl)
 
+	//nolint:wrapcheck
 	return rawurl, err
 }

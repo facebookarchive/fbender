@@ -12,6 +12,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
+	"github.com/facebookincubator/fbender/cmd/core/errors"
 	"github.com/facebookincubator/fbender/cmd/core/input"
 	"github.com/facebookincubator/fbender/cmd/core/options"
 	"github.com/facebookincubator/fbender/cmd/core/runner"
@@ -23,6 +24,7 @@ import (
 func params(cmd *cobra.Command, o *options.Options) (*runner.Params, error) {
 	r, err := input.NewRequestGenerator(o.Input, inputTransformer)
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
@@ -41,11 +43,12 @@ func inputTransformer(input string) (interface{}, error) {
 
 	n, err := fmt.Sscanf(input, "%d %s", &datagram.Port, &encodedData)
 	if err != nil || n < 2 {
-		return nil, fmt.Errorf("invalid datagram: %q, want: \"Port Base64Payload\"", input)
+		return nil, fmt.Errorf("%w, want: \"Port Base64Payload\", got: %q", errors.ErrInvalidFormat, input)
 	}
 
 	datagram.Data, err = base64.StdEncoding.DecodeString(encodedData)
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 

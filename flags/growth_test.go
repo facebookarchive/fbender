@@ -47,7 +47,8 @@ func TestGrowth__Set(t *testing.T) {
 	assert.IsType(t, new(tester.ExponentialGrowth), value.Growth)
 	// Unknown prefix
 	err = value.Set("@200")
-	assert.Equal(t, tester.ErrInvalidGrowth, err)
+	assert.ErrorIs(t, err, tester.ErrInvalidGrowth)
+	assert.EqualError(t, err, "error parsing growth \"@200\": unknown growth, want +int, %%flaot, ^int")
 }
 
 func TestGrowth__Type(t *testing.T) {
@@ -72,11 +73,13 @@ func TestGetGrowth(t *testing.T) {
 	assert.IsType(t, new(tester.PercentageGrowth), growth)
 	// Check if error when flag does not exist
 	_, err = flags.GetGrowth(f, "nonexistent")
-	assert.EqualError(t, err, "flag nonexistent accessed but not defined")
+	assert.ErrorIs(t, err, flags.ErrUndefined)
+	assert.EqualError(t, err, "flag accessed but not defined: \"nonexistent\"")
 	// Check if error when value is of different type
 	f.Int("myint", 0, "set myint")
 	_, err = flags.GetGrowth(f, "myint")
-	assert.EqualError(t, err, "trying to get growth value of flag of type int")
+	assert.ErrorIs(t, err, flags.ErrInvalidType)
+	assert.EqualError(t, err, "accessed flag type does not match, want: *GrowthValue, got: *pflag.intValue")
 }
 
 func TestGetGrowthValue(t *testing.T) {
@@ -98,5 +101,6 @@ func TestGetGrowthValue(t *testing.T) {
 	flag := f.Lookup("myint")
 	require.NotNil(t, flag)
 	_, err = flags.GetGrowthValue(flag.Value)
-	assert.EqualError(t, err, "trying to get growth value of flag of type int")
+	assert.ErrorIs(t, err, flags.ErrInvalidType)
+	assert.EqualError(t, err, "accessed flag type does not match, want: *GrowthValue, got: *pflag.intValue")
 }

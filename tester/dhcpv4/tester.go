@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 package dhcpv4
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"time"
@@ -31,12 +32,12 @@ type Tester struct {
 func (t *Tester) Before(options interface{}) error {
 	target, err := net.ResolveUDPAddr("udp4", t.Target)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to set up the tester: %w", err)
 	}
 
 	addr, err := getLocalIPv4("eth0")
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to set up the tester: %w", err)
 	}
 
 	t.client = &async.Client{
@@ -72,15 +73,20 @@ func (t *Tester) RequestExecutor(_ interface{}) (bender.RequestExecutor, error) 
 	return protocol.CreateExecutor(t.client, validator)
 }
 
+// ErrNoAddress is raised when an interface has no ipv4 addresses assigned.
+var ErrNoAddress = errors.New("no ipv4 address found")
+
 // getLocalIPv4 returns the interface local IPv4 address.
 func getLocalIPv4(ifname string) (net.IP, error) {
 	iface, err := net.InterfaceByName(ifname)
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
 	ifaddrs, err := iface.Addrs()
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
@@ -92,5 +98,5 @@ func getLocalIPv4(ifname string) (net.IP, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("no ipv4 address found for interface %s", ifname)
+	return nil, fmt.Errorf("%w, interface: %s", ErrNoAddress, ifname)
 }

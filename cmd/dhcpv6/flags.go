@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/facebookincubator/fbender/flags"
 	"github.com/insomniacslk/dhcp/dhcpv6"
 	"github.com/spf13/pflag"
 )
@@ -55,6 +56,7 @@ func (s *optionCodeSliceValue) Set(value string) error {
 	for _, v := range values {
 		optcode, err := strconv.ParseUint(v, 10, 8)
 		if err != nil {
+			//nolint:wrapcheck
 			return err
 		}
 
@@ -73,7 +75,7 @@ func (s *optionCodeSliceValue) Set(value string) error {
 }
 
 func (s *optionCodeSliceValue) Type() string {
-	return "optionCodeSlice"
+	return "optioncodes"
 }
 
 func (s *optionCodeSliceValue) String() string {
@@ -89,7 +91,7 @@ func (s *optionCodeSliceValue) String() string {
 func GetOptionCodes(f *pflag.FlagSet, name string) ([]dhcpv6.OptionCode, error) {
 	flag := f.Lookup(name)
 	if flag == nil {
-		return nil, fmt.Errorf("flag %s accessed but not defined", name)
+		return nil, fmt.Errorf("%w: %q", flags.ErrUndefined, name)
 	}
 
 	return GetOptionCodesValue(flag.Value)
@@ -101,5 +103,5 @@ func GetOptionCodesValue(v pflag.Value) ([]dhcpv6.OptionCode, error) {
 		return *optcodes.value, nil
 	}
 
-	return nil, fmt.Errorf("trying to get option codes value of flag of type %s", v.Type())
+	return nil, fmt.Errorf("%w, want: optioncodes, got: %s", flags.ErrInvalidType, v.Type())
 }

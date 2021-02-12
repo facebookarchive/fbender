@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 package flags
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -47,6 +48,9 @@ func NewDefaultDistribution() *Distribution {
 	}
 }
 
+// ErrInvalidGenerator is raised when an unknown generator is set.
+var ErrInvalidGenerator = errors.New("invalid generator")
+
 // DistributionChoices returns a string representation of available generators.
 func DistributionChoices() []string {
 	choices := []string{}
@@ -77,9 +81,11 @@ func (d *Distribution) Set(value string) error {
 	if len(matches) == 0 {
 		choices := ChoicesString(DistributionChoices())
 
-		return fmt.Errorf("generator must be one of %s, '%s' given", choices, value)
+		return fmt.Errorf("%w, want: %s, got: %q", ErrInvalidGenerator, choices, value)
 	} else if len(matches) > 1 {
-		return fmt.Errorf("ambiguous generator '%s' matches %s", value, ChoicesString(matches))
+		sort.Strings(matches)
+
+		return fmt.Errorf("%w, ambiguous prefix %q matches: %s", ErrInvalidGenerator, value, ChoicesString(matches))
 	}
 
 	generator := matches[0]
@@ -103,7 +109,7 @@ func (d *Distribution) Get() DistributionGenerator {
 func GetDistribution(f *pflag.FlagSet, name string) (DistributionGenerator, error) {
 	flag := f.Lookup(name)
 	if flag == nil {
-		return nil, fmt.Errorf("flag %s accessed but not defined", name)
+		return nil, fmt.Errorf("%w: %q", ErrUndefined, name)
 	}
 
 	return GetDistributionValue(flag.Value)
@@ -115,7 +121,7 @@ func GetDistributionValue(v pflag.Value) (DistributionGenerator, error) {
 		return distribution.Get(), nil
 	}
 
-	return nil, fmt.Errorf("trying to get distribution value of flag of type %s", v.Type())
+	return nil, fmt.Errorf("%w, want: distribution, got: %s", ErrInvalidType, v.Type())
 }
 
 // Bash completion function constants.
@@ -128,11 +134,11 @@ const (
 func BashCompletionDistribution(cmd *cobra.Command, f *pflag.FlagSet, name string) error {
 	flag := f.Lookup(name)
 	if flag == nil {
-		return fmt.Errorf("flag %s accessed but not defined", name)
+		return fmt.Errorf("%w: %q", ErrUndefined, name)
 	}
 
 	if _, ok := flag.Value.(*Distribution); !ok {
-		return fmt.Errorf("trying to autocomplete distribution on flag of type %s", flag.Value.Type())
+		return fmt.Errorf("%w, want: distribution, got: %s", ErrInvalidType, flag.Value.Type())
 	}
 
 	return utils.BashCompletion(cmd, f, name, fnameDistribution, fbodyDistribution)

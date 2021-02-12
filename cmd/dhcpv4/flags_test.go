@@ -9,9 +9,11 @@ LICENSE file in the root directory of this source tree.
 package dhcpv4_test
 
 import (
+	"strconv"
 	"testing"
 
-	flags "github.com/facebookincubator/fbender/cmd/dhcpv4"
+	dhcpv4flags "github.com/facebookincubator/fbender/cmd/dhcpv4"
+	"github.com/facebookincubator/fbender/flags"
 	"github.com/insomniacslk/dhcp/dhcpv4"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/suite"
@@ -23,7 +25,7 @@ type OptionCodeSliceValueTestSuite struct {
 }
 
 func (s *OptionCodeSliceValueTestSuite) SetupTest() {
-	s.value = flags.NewOptionCodeSliceValue()
+	s.value = dhcpv4flags.NewOptionCodeSliceValue()
 	s.Require().NotNil(s.value)
 }
 
@@ -31,7 +33,7 @@ func (s *OptionCodeSliceValueTestSuite) TestSet_NoErrors() {
 	err := s.value.Set("1,2")
 	s.Require().NoError(err)
 
-	v, err := flags.GetOptionCodesValue(s.value)
+	v, err := dhcpv4flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
 
 	o := dhcpv4.OptionCodeList{dhcpv4.OptionSubnetMask, dhcpv4.OptionTimeOffset}
@@ -41,7 +43,7 @@ func (s *OptionCodeSliceValueTestSuite) TestSet_NoErrors() {
 	err = s.value.Set("3")
 	s.Require().NoError(err)
 
-	v, err = flags.GetOptionCodesValue(s.value)
+	v, err = dhcpv4flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
 
 	o = append(o, dhcpv4.OptionRouter)
@@ -50,7 +52,7 @@ func (s *OptionCodeSliceValueTestSuite) TestSet_NoErrors() {
 	err = s.value.Set("4,5")
 	s.Require().NoError(err)
 
-	v, err = flags.GetOptionCodesValue(s.value)
+	v, err = dhcpv4flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
 
 	o = append(o, dhcpv4.OptionTimeServer, dhcpv4.OptionNameServer)
@@ -60,51 +62,57 @@ func (s *OptionCodeSliceValueTestSuite) TestSet_NoErrors() {
 func (s *OptionCodeSliceValueTestSuite) TestSet_Errors() {
 	// Errors - single value
 	err := s.value.Set("notanumber")
+	s.Assert().ErrorIs(err, strconv.ErrSyntax)
 	s.Assert().EqualError(err, "strconv.ParseUint: parsing \"notanumber\": invalid syntax")
 
-	v, err := flags.GetOptionCodesValue(s.value)
+	v, err := dhcpv4flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().Empty(v)
 
 	err = s.value.Set("42.5")
+	s.Assert().ErrorIs(err, strconv.ErrSyntax)
 	s.Assert().EqualError(err, "strconv.ParseUint: parsing \"42.5\": invalid syntax")
 
-	v, err = flags.GetOptionCodesValue(s.value)
+	v, err = dhcpv4flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().Empty(v)
 
 	err = s.value.Set("-10")
+	s.Assert().ErrorIs(err, strconv.ErrSyntax)
 	s.Assert().EqualError(err, "strconv.ParseUint: parsing \"-10\": invalid syntax")
 
-	v, err = flags.GetOptionCodesValue(s.value)
+	v, err = dhcpv4flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().Empty(v)
 
 	err = s.value.Set("256")
+	s.Assert().ErrorIs(err, strconv.ErrRange)
 	s.Assert().EqualError(err, "strconv.ParseUint: parsing \"256\": value out of range")
 
-	v, err = flags.GetOptionCodesValue(s.value)
+	v, err = dhcpv4flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().Empty(v)
 
 	// Errors - multiple values
 	err = s.value.Set("42,notanumber")
+	s.Assert().ErrorIs(err, strconv.ErrSyntax)
 	s.Assert().EqualError(err, "strconv.ParseUint: parsing \"notanumber\": invalid syntax")
 
-	v, err = flags.GetOptionCodesValue(s.value)
+	v, err = dhcpv4flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().Empty(v)
 
 	err = s.value.Set("42,42.5,notanumber")
+	s.Assert().ErrorIs(err, strconv.ErrSyntax)
 	s.Assert().EqualError(err, "strconv.ParseUint: parsing \"42.5\": invalid syntax")
 
-	v, err = flags.GetOptionCodesValue(s.value)
+	v, err = dhcpv4flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().Empty(v)
 }
 
 func (s *OptionCodeSliceValueTestSuite) TestType() {
-	s.Assert().Equal("optionCodeSlice", s.value.Type())
+	s.Assert().Equal("optioncodes", s.value.Type())
 }
 
 func (s *OptionCodeSliceValueTestSuite) TestString_Known() {
@@ -152,25 +160,27 @@ func (s *OptionCodeSliceValueTestSuite) TestGetOptionCodes() {
 	err := s.value.Set("39")
 	s.Require().NoError(err)
 
-	v, err := flags.GetOptionCodes(f, "optioncodes")
+	v, err := dhcpv4flags.GetOptionCodes(f, "optioncodes")
 	s.Require().NoError(err)
 	s.Assert().Equal(dhcpv4.OptionCodeList{dhcpv4.OptionTCPKeepaliveGarbage}, v)
 
 	// Check error when flag does not exist
-	_, err = flags.GetOptionCodes(f, "nonexistent")
-	s.Assert().EqualError(err, "flag nonexistent accessed but not defined")
+	_, err = dhcpv4flags.GetOptionCodes(f, "nonexistent")
+	s.Assert().ErrorIs(err, flags.ErrUndefined)
+	s.Assert().EqualError(err, "flag accessed but not defined: \"nonexistent\"")
 
 	// Check error when value is of different type
 	f.Int("myint", 0, "set myint")
-	_, err = flags.GetOptionCodes(f, "myint")
-	s.Assert().EqualError(err, "trying to get option codes value of flag of type int")
+	_, err = dhcpv4flags.GetOptionCodes(f, "myint")
+	s.Assert().ErrorIs(err, flags.ErrInvalidType)
+	s.Assert().EqualError(err, "accessed flag type does not match, want: optioncodes, got: int")
 }
 
 func (s *OptionCodeSliceValueTestSuite) TestGetOptionCodesValue() {
 	err := s.value.Set("39")
 	s.Require().NoError(err)
 
-	v, err := flags.GetOptionCodesValue(s.value)
+	v, err := dhcpv4flags.GetOptionCodesValue(s.value)
 	s.Require().NoError(err)
 	s.Assert().Equal(dhcpv4.OptionCodeList{dhcpv4.OptionTCPKeepaliveGarbage}, v)
 
@@ -181,8 +191,9 @@ func (s *OptionCodeSliceValueTestSuite) TestGetOptionCodesValue() {
 	flag := f.Lookup("myint")
 	s.Require().NotNil(flag)
 
-	_, err = flags.GetOptionCodesValue(flag.Value)
-	s.Assert().EqualError(err, "trying to get option codes value of flag of type int")
+	_, err = dhcpv4flags.GetOptionCodesValue(flag.Value)
+	s.Assert().ErrorIs(err, flags.ErrInvalidType)
+	s.Assert().EqualError(err, "accessed flag type does not match, want: optioncodes, got: int")
 }
 
 func TestOptionCodeSliceValueTestSuite(t *testing.T) {

@@ -31,20 +31,27 @@ func (c *Constraint) String() string {
 		c.Aggregator.Name(), c.Metric.Name(), c.Comparator.Name(), c.Threshold)
 }
 
+// ErrNoDataPoints is raised when no data points are found.
+var ErrNoDataPoints = errors.New("no data points")
+
+// ErrNotSatisfied is raised when a condition is not met.
+var ErrNotSatisfied = errors.New("unsatisfied condition")
+
 // Check fetches metric and checks if the constraint has been satisfied.
 func (c *Constraint) Check(start time.Time, duration time.Duration) error {
 	points, err := c.Metric.Fetch(start, duration)
 	if err != nil {
+		//nolint:wrapcheck
 		return err
 	}
 
 	if points == nil {
-		return errors.New("no data points")
+		return ErrNoDataPoints
 	}
 
 	value := c.Aggregator.Aggregate(points)
 	if !c.Comparator.Compare(value, c.Threshold) {
-		return fmt.Errorf("unsatisfied %.4f %s %.4f", value, c.Comparator.Name(), c.Threshold)
+		return fmt.Errorf("%w: %.4f %s %.4f", ErrNotSatisfied, value, c.Comparator.Name(), c.Threshold)
 	}
 
 	return nil
@@ -68,6 +75,9 @@ Constraints examples:
 
 // ErrNotParsed should be returned when a parser did not parse a constraint.
 var ErrNotParsed = errors.New("constraint could not be parsed")
+
+// ErrInvalidFormat is raised when the constraint format is not correct.
+var ErrInvalidFormat = errors.New("invalid constraint format")
 
 // MetricParser is used to parse string values to a metric.
 // Parsers should return a metric and error if it successfully parsed
@@ -94,7 +104,7 @@ var constraintRegexp = utils.MustCompile(
 // ParseConstraint creates a constraint from a string representation.
 func ParseConstraint(s string, parsers ...MetricParser) (*Constraint, error) {
 	if !constraintRegexp.MatchString(s) {
-		return nil, errors.New("invalid constraint format")
+		return nil, ErrInvalidFormat
 	}
 
 	match := constraintRegexp.FindStringSubmatchMap(s)
@@ -116,6 +126,7 @@ func ParseConstraint(s string, parsers ...MetricParser) (*Constraint, error) {
 
 	threshold, err := strconv.ParseFloat(match["threshold"], 64)
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 

@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 package http
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -25,6 +26,12 @@ type Tester struct {
 	Validator protocol.ResponseValidator
 	client    *http.Client
 }
+
+// httpStatusOK is the HTTP correct response status code.
+const httpStatusOK = 200
+
+// ErrInvalidResponse is raised when a request returns a code different than 200.
+var ErrInvalidResponse = errors.New("invalid response status")
 
 // Before is called before the first test.
 func (t *Tester) Before(options interface{}) error {
@@ -46,17 +53,16 @@ func (t *Tester) BeforeEach(_ interface{}) error {
 // AfterEach is called after every test.
 func (t *Tester) AfterEach(_ interface{}) {}
 
-const httpStatusOK = 200
-
 // A default validator checks if response type is 200 OK, reads the whole body
 // to force download.
 func validator(request interface{}, response *http.Response) error {
 	if response.StatusCode != httpStatusOK {
-		return fmt.Errorf("invalid response status \"%s\", want \"200 OK\"", response.Status)
+		return fmt.Errorf("%w, want: \"200 OK\", got: \"%s\"", ErrInvalidResponse, response.Status)
 	}
 
 	_, err := io.Copy(ioutil.Discard, response.Body)
 
+	//nolint:wrapcheck
 	return err
 }
 

@@ -32,7 +32,10 @@ type Tester struct {
 	client   *dns.Client
 }
 
-// ErrInvalidResponse is an error raised when the response doesn't match the expected value.
+// ErrInvalidRequest is an error raised when the request is invalid.
+var ErrInvalidRequest = errors.New("invalid request")
+
+// ErrInvalidResponse is raised when the response is invalid.
 var ErrInvalidResponse = errors.New("invalid response")
 
 // Before is called before the first test.
@@ -74,7 +77,7 @@ func (t *Tester) RequestExecutor(options interface{}) (bender.RequestExecutor, e
 	return func(n int64, request interface{}) (interface{}, error) {
 		asExtended, ok := request.(*ExtendedMsg)
 		if !ok {
-			return nil, fmt.Errorf("request type is not ExtendedMsg")
+			return nil, fmt.Errorf("%w: invalid type, want: *ExtendedMsg, got: %T", ErrInvalidRequest, request)
 		}
 
 		resp, err := innerExecutor(n, &asExtended.Msg)
@@ -84,13 +87,13 @@ func (t *Tester) RequestExecutor(options interface{}) (bender.RequestExecutor, e
 
 		asMsg, ok := resp.(*dns.Msg)
 		if !ok {
-			return nil, fmt.Errorf("response type is not dns.Msg")
+			return nil, fmt.Errorf("%w: invalid type, want: *dns.Msg, got: %T", ErrInvalidResponse, resp)
 		}
 
 		if asExtended.Rcode != -1 && asExtended.Rcode != asMsg.Rcode {
 			return resp, fmt.Errorf(
-				"invalid rcode %s, want: %s",
-				dns.RcodeToString[asMsg.Rcode], dns.RcodeToString[asExtended.Rcode])
+				"%w: invalid rcode want: %q, got: %q", ErrInvalidResponse,
+				dns.RcodeToString[asExtended.Rcode], dns.RcodeToString[asMsg.Rcode])
 		}
 
 		return resp, nil

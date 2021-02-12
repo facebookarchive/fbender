@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 package udp
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"strconv"
@@ -27,6 +28,9 @@ type Datagram struct {
 	Data []byte
 }
 
+// ErrInvalidType is raised when object type mismatch.
+var ErrInvalidType = errors.New("invalid type")
+
 // ResponseValidator validates a udp response.
 type ResponseValidator func(request *Datagram, response []byte) error
 
@@ -37,7 +41,7 @@ func CreateExecutor(timeout time.Duration, validator ResponseValidator, hosts ..
 	return func(_ int64, request interface{}) (interface{}, error) {
 		datagram, ok := request.(*Datagram)
 		if !ok {
-			return nil, fmt.Errorf("invalid udp datagram %v", request)
+			return nil, fmt.Errorf("%w, want: *Datagram, got: %T", ErrInvalidType, request)
 		}
 
 		addr := net.JoinHostPort(hosts[i], strconv.Itoa(datagram.Port))
@@ -46,6 +50,7 @@ func CreateExecutor(timeout time.Duration, validator ResponseValidator, hosts ..
 		// Setup connection
 		conn, err := net.Dial("udp", addr)
 		if err != nil {
+			//nolint:wrapcheck
 			return nil, err
 		}
 
@@ -56,22 +61,26 @@ func CreateExecutor(timeout time.Duration, validator ResponseValidator, hosts ..
 		}()
 
 		if err = conn.SetWriteDeadline(time.Now().Add(timeout)); err != nil {
+			//nolint:wrapcheck
 			return nil, err
 		}
 
 		_, err = conn.Write(datagram.Data)
 		if err != nil {
+			//nolint:wrapcheck
 			return nil, err
 		}
 
 		buffer := make([]byte, MaxResponseSize)
 
 		if err = conn.SetReadDeadline(time.Now().Add(timeout)); err != nil {
+			//nolint:wrapcheck
 			return nil, err
 		}
 
 		n, err := conn.Read(buffer)
 		if err != nil {
+			//nolint:wrapcheck
 			return nil, err
 		}
 

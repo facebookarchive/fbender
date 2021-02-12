@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/facebookincubator/fbender/cmd/core/errors"
 	"github.com/facebookincubator/fbender/cmd/core/input"
 	"github.com/facebookincubator/fbender/cmd/core/options"
 	"github.com/facebookincubator/fbender/cmd/core/runner"
@@ -27,11 +28,13 @@ const DefaultServerPort = 69
 func params(cmd *cobra.Command, o *options.Options) (*runner.Params, error) {
 	blocksize, err := cmd.Flags().GetInt("blocksize")
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
 	r, err := input.NewRequestGenerator(o.Input, inputTransformer)
 	if err != nil {
+		//nolint:wrapcheck
 		return nil, err
 	}
 
@@ -47,12 +50,12 @@ func params(cmd *cobra.Command, o *options.Options) (*runner.Params, error) {
 func inputTransformer(input string) (interface{}, error) {
 	i := strings.Index(input, " ")
 	if i < 0 {
-		return nil, fmt.Errorf("input must have a format of 'File Mode' got '%s'", input)
+		return nil, fmt.Errorf("%w, want: \"File Mode\" got %q", errors.ErrInvalidFormat, input)
 	}
 
 	filename, mode := input[:i], input[i+1:]
 	if mode != "octet" && mode != "netascii" {
-		return nil, fmt.Errorf("invalid mode '%s', want (octet|netascii)", mode)
+		return nil, fmt.Errorf("%w, want: (octet|netascii), got: %q", errors.ErrInvalidFormat, mode)
 	}
 
 	return &tftp.Request{

@@ -9,13 +9,13 @@ LICENSE file in the root directory of this source tree.
 package recorders_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/facebookincubator/fbender/recorders"
 	"github.com/pinterest/bender"
 	"github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/test"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -144,7 +144,7 @@ func (s *LogrusRecorderTestSuite) TestEndRequestEvent_Error() {
 		Start:    420,
 		End:      4200,
 		Response: "invalid response",
-		Err:      errors.New("invalid response"),
+		Err:      assert.AnError,
 	}
 	s.recordSingleEvent(event)
 	s.Require().Len(s.hook.Entries, 1)
@@ -155,7 +155,7 @@ func (s *LogrusRecorderTestSuite) TestEndRequestEvent_Error() {
 		"end":      int64(4200),
 		"elapsed":  3780,
 		"response": "invalid response",
-		"error":    errors.New("invalid response"),
+		"error":    assert.AnError,
 	}, s.hook.LastEntry().Data)
 
 	s.hook.Reset()
@@ -180,7 +180,7 @@ func (s *LogrusRecorderTestSuite) TestEndRequestEvent_Error() {
 		"end":      int64(4200),
 		"elapsed":  3780,
 		"response": "invalid response",
-		"error":    errors.New("invalid response"),
+		"error":    assert.AnError,
 	}, s.hook.LastEntry().Data)
 }
 
