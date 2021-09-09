@@ -1,6 +1,6 @@
 # FBender
 [![Build Status](https://github.com/facebookincubator/fbender/workflows/Go/badge.svg)](https://github.com/facebookincubator/fbender/actions)
-[![codecov](https://codecov.io/gh/facebookincubator/fbender/branch/master/graph/badge.svg)](https://codecov.io/gh/facebookincubator/fbender)
+[![codecov](https://codecov.io/gh/facebookincubator/fbender/branch/main/graph/badge.svg)](https://codecov.io/gh/facebookincubator/fbender)
 [![Go Report Card](https://goreportcard.com/badge/github.com/facebookincubator/fbender)](https://goreportcard.com/report/github.com/facebookincubator/fbender)
 
 FBender is a __load testing__ command line tool for generic network protocols.
@@ -79,9 +79,9 @@ source <(fbender complete bash)
 
 ## Docs
 
-* [General usage guide](https://github.com/facebookincubator/fbender/blob/master/docs/USAGE.md)
-* [Protocol specific usage and examples](https://github.com/facebookincubator/fbender/blob/master/docs/PROTOCOLS.md)
-* [Extending FBender](https://github.com/facebookincubator/fbender/blob/master/docs/EXTENDING.md)
+* [General usage guide](https://github.com/facebookincubator/fbender/blob/main/docs/USAGE.md)
+* [Protocol specific usage and examples](https://github.com/facebookincubator/fbender/blob/main/docs/PROTOCOLS.md)
+* [Extending FBender](https://github.com/facebookincubator/fbender/blob/main/docs/EXTENDING.md)
 
 ## License
 
